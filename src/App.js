@@ -46,8 +46,9 @@ export default function App() {
                   flavor: "ACTION",
                   name: "Use CPAP breathing assistant when sleeping",
                   picker: "PickEnum(Never,Sometimes,Nightly)",
+                  id: 4,
                   impacts: [
-                    "if(^,Never    ).doNothing()",
+                    "if(Never    ).doNothing()",
                     "if(Sometimes).fix(Moderate,---).say(Reduces moderate & severe impacts.)",
                     "if(Nightly  ).fix(Moderate,DEL).fix(Severe,---).say(Removes moderate & severe impacts.)"
                   ]
@@ -62,16 +63,15 @@ export default function App() {
   const jours = {
     "1": ["Symptom: Difficulty sleeping", 1, null],
     "2": ["Diagnosis: CPOD", "Mild", null],
-    "3": ["Sleep apena", "Moderate", null]
+    "3": ["Sleep apena", "Moderate", null],
+    "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
   }
 
-  const parseImp = (imp) =>
-    imp.split(/\s*\./g).map((x) =>
-      x
-        .trim()
-        .split(/[()]/g)
-        .filter((x) => x !== "")
-    )
+  const parseImp = (imp) => imp.split(/\s*\./g).map((i) => (
+    i.trim()
+    .split(/[()]/g)
+    .filter((x) => x !== "")
+  ))
   const cleanImpacts = (imps) => imps.map((imp) => parseImp(imp))
 
   const decorateStruc = (struc, jours) => {
@@ -132,7 +132,7 @@ export default function App() {
   }
   const matchAncestorPick = (struc, idx, pickIndexToCompare = 2) => (
     struc.ancestors.map( (x) =>
-      safeIth(x.pick, pickIndexToCompare).contains(idx)
+      safeIth(x.pick, pickIndexToCompare.contains(idx) )
     )
   )
 
@@ -143,7 +143,7 @@ export default function App() {
 
   const matchParentPick = (struc, valToMatch, pickIndexToCompare = 1) => {
     const pp = safeIth(struc.parent().pick, pickIndexToCompare)
-    console.log( `Does if(${valToMatch}) == ${pp} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
+    console.log( `${(pp === valToMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${pp} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
     return pp === valToMatch
   }
 
@@ -163,10 +163,23 @@ export default function App() {
         i += 2
       }
     } else {
+      // oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
       oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
     }
     return oneMatched
   }
+
+  const tfStr = (tf) => (tf) ? "T" : "F"
+  const SimpleImp =({tf,parts,stl={},elType='d'}) => {
+    // const txt = `${tfStr(tf)}: ${parts.join('(')})`
+    const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`
+    stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
+    return (elType=='s')?
+    <span style={stl}>{txt}</span> :
+    <div  style={stl}>{txt}</div>
+  }
+  const FixImp = (props) => <SimpleImp {...{...props, stl:{fontWeight:'bold'}}} />
+  const SayImp = (props) => <SimpleImp {...{...props, elType:'s'}} />
 
   const runImps = (imps, struc) => {
     return (imps && imps.map((imp) => runImp(imp, struc))) || []
@@ -174,17 +187,19 @@ export default function App() {
   const runImp = (impRaw, struc) => {
     const imp = parseImp(impRaw)
     let ifExpResult = false
-    return imp.map((i) => {
-      const [verb, ...rest] = i
+    return imp.filter(x=>x.length>0).map((impParts) => {
+      const [verb, ...rest] = impParts.map(x=>x.trim())
       // console.log( [verb, rest] )
       if (verb == "if") {
         ifExpResult = if_Imp(rest[0], struc)
         console.log(ifExpResult)
-        return (ifExpResult ? " True :" : " False: ") + i.join('( ')
+        return <SimpleImp tf={ifExpResult} parts={impParts} />
       } else if (verb == "say") {
-        return <div key={rest[0]}>
-          {(ifExpResult ? " True :" : " False: ") + i.join('( ') + rest[0]}
-        </div>
+        return <SayImp tf={ifExpResult} parts={impParts} />
+      } else if (verb == "fix") {
+        return <FixImp tf={ifExpResult} parts={impParts} />
+      } else {
+        return <SimpleImp tf={ifExpResult} parts={impParts} />
       }
     })
   }
