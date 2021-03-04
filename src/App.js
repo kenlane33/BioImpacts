@@ -8,7 +8,7 @@ const imps2 = [
 const safeIth = (arr, i) => (arr && i < arr.length ? arr[i] : null)
 const safeInt = (int) => {}
 export default function App() {
-  var data = 
+  var structures = 
     {
       flavor: "CONDITION",
       id: 1,
@@ -31,7 +31,7 @@ export default function App() {
                     .say(Dry mouth)
                     .say(Mild snoring)`,
 
-                `if(Moderate)
+                `if(Mild)
                     .prior()
                     .say(Diabetes)
                     .say(Strokes)
@@ -49,8 +49,8 @@ export default function App() {
                   id: 4,
                   impacts: [
                     "if(Never    ).doNothing()",
-                    "if(Sometimes).fix(Moderate,---).say(Reduces moderate & severe impacts.)",
-                    "if(Nightly  ).fix(Moderate,DEL).fix(Severe,---).say(Removes moderate & severe impacts.)"
+                    "if(Sometimes).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
+                    "if(Nightly  ).delete(Moderate).strikeSays(Severe).say(Removes moderate & severe impacts.)"
                   ]
                 }
               ]
@@ -74,26 +74,39 @@ export default function App() {
   ))
   const cleanImpacts = (imps) => imps.map((imp) => parseImp(imp))
 
-  const decorateStruc = (struc, jours) => {
+  const parentArr = (struc) => {
+    let arr = [struc]
+    while(struc.parent) {
+      struc = struc.parent()
+      arr.push(struc)
+    }
+    return arr
+  }
+  //----/////////////----------------------
+  const decorateStruc = (struc, jours, parent) => {
+    struc.ancestors = () => parentArr(struc)//[struc, ...((parent) ? parent.ancestors() : [])]
+    console.log('parentArr(struc)=',struc.ancestors().map(x=>x.id))
+    
     const kids = struc.children
-    if (!struc.ancestors) struc.ancestors = () => []
-    if (kids)
+    if (kids){
       kids.forEach((k) => {
         k.parent = () => struc // a function that returns the parent (not a ref since that would make a graph loop!)
         k.parentImpacts = struc.impacts
-        if (!struc.ancestors) k.ancestors = () => [struc]
-        // append first
-        else k.ancestors = () => [...struc.ancestors(), struc] // append the rest
+        // if (!struc.ancestors) k.ancestors = () => [struc]
+        // // append first
+        // else k.ancestors = () => [struc, ...struc.ancestors()] // append the rest
       })
+    }
     console.log(struc.flavor, struc.name, struc.ancestors())
     // if(struc.impacts) struc.impacts = cleanImpacts(struc.impacts)
-    const jour = jours[struc.id]
-    if (jour) {
-      struc.pick = jour
-      jour.push(() => struc) // jour[3] is a fn that returns this struc
+    const pickOfJour = jours[struc.id]
+    if (pickOfJour) {
+      struc.pick = pickOfJour
+      pickOfJour.push(() => struc) // jour[3] is a fn that returns this struc
     }
-    return [struc, ...decorateStrucs(struc.children, jours)]
+    return [struc, ...decorateStrucs(struc.children, jours, struc)]
   }
+  //----/////////////----------------------
   const decorateStrucs = (strucs, jours) =>(
     (strucs && strucs.map((x) => decorateStruc(x, jours) )) || []
   )
@@ -116,9 +129,9 @@ export default function App() {
   //   txt = compactJson(JSON.stringify(imps, null, 2))
   // console.log(str)
   
-  data = decorateStruc(data, jours)
-  console.log( data )
-  const str = JSON.stringify( data, null, 2)
+  structures = decorateStruc(structures, jours)
+  console.log( structures )
+  const str = JSON.stringify( structures, null, 2)
 
   const Sayer = ({imps: impsArr}) => {
     const hasSay = (x) => x[0] === "say"
@@ -130,11 +143,18 @@ export default function App() {
       ))
     )
   }
-  const matchAncestorPick = (struc, idx, pickIndexToCompare = 2) => (
-    struc.ancestors.map( (x) =>
-      safeIth(x.pick, pickIndexToCompare.contains(idx) )
-    )
-  )
+
+  const matchAncestorPick = (struc, valToMatch) => {
+    let wasFound = false
+    struc.ancestors().forEach( (x) => {
+      const p1 = safeIth( x.pick, 1 )
+      const p2 = safeIth( x.pick, 2 )
+      // console.log((p1 === valToMatch), 'p1=', p1, 'val=', valToMatch, 'Pick=', x.pick)
+      wasFound ||= (p1 === valToMatch)
+      wasFound ||= (p2 === valToMatch)
+    })
+    return wasFound
+  }
 
   const safeParseInt = (str) => {
     const i = parseInt(str) // also handles numbers correctly
@@ -147,25 +167,36 @@ export default function App() {
     return pp === valToMatch
   }
 
+  const safeSplit = (str,char) => (str.includes(char)) ? str.split(char) : ([str])
+
   const if_Imp = (ifParams, struc) => {
-    console.log(["if(", ifParams, struc])
     let oneMatched = false
-    if (ifParams && ifParams.includes(",")) {
-      const ps = ifParams.split(",").map((x) => x.trim())
+    if (ifParams) {
+      const ps = safeSplit(ifParams, ',').map((x) => x.trim())
       let i = 0
-      while (i < ps.length - 1) {
-        if      (ps[i] === "^" ) {
-          oneMatched ||= matchParentPick(struc, ps[i + 1])
+      while (i < ps.length) { // step through a,b pairs or just one a at a time
+        const a = ps[i]           // first  of pair
+        ,     b = safeIth(ps,i+1) // second of pair
+        if      ((a === "^") && b) {
+          oneMatched ||= matchParentPick(struc, b)
+          i += 2
         }
-        else if (ps[i] === "^^") {
-          oneMatched ||= matchAncestorPick(struc, ps[i + 1])
+        else if ((a === "^^") && b) {
+          oneMatched ||= matchAncestorPick(struc, b)
+          i += 2
         }
-        i += 2
+        else {
+          oneMatched ||= matchAncestorPick(struc, a)
+          // const picks = struc.ancestors().map(a=>`[${a.id}]:${a.pick.slice(1,2)}`)
+          // console.log(`a=${a}, anc.picks=${picks} | match?=${matchAncestorPick(struc, a)}`)
+          i += 1
+        }
       }
     } else {
       // oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
       oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
     }
+    console.log([oneMatched, "if(", ifParams, struc])
     return oneMatched
   }
 
@@ -174,7 +205,7 @@ export default function App() {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
     const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
-    return (elType=='s')?
+    return (elType==='s')?
     <span style={stl}>{txt}</span> :
     <div  style={stl}>{txt}</div>
   }
@@ -190,13 +221,12 @@ export default function App() {
     return imp.filter(x=>x.length>0).map((impParts) => {
       const [verb, ...rest] = impParts.map(x=>x.trim())
       // console.log( [verb, rest] )
-      if (verb == "if") {
+      if (verb === "if") {
         ifExpResult = if_Imp(rest[0], struc)
-        console.log(ifExpResult)
         return <SimpleImp tf={ifExpResult} parts={impParts} />
-      } else if (verb == "say") {
+      } else if (verb === "say") {
         return <SayImp tf={ifExpResult} parts={impParts} />
-      } else if (verb == "fix") {
+      } else if (verb === "fix") {
         return <FixImp tf={ifExpResult} parts={impParts} />
       } else {
         return <SimpleImp tf={ifExpResult} parts={impParts} />
@@ -208,7 +238,7 @@ export default function App() {
   const Struc = ({struc}) => {
     return [
       <div key={struc.name || "?"}>
-        {struc.flavor + ':' + struc.name}
+        {`${struc.flavor} : ${struc.name} [${struc.id}]`}
 
         <br />
 
@@ -243,7 +273,7 @@ export default function App() {
       <h3>Dig</h3>
       {/* <pre>{str}</pre> */}
       {/* <pre>{txt}</pre> */}
-      <Strucs strucs={data} />
+      <Strucs strucs={structures} />
       {/* <Sayer imps={imps} /> */}
 
       <h2>Start editing to see some magic happen!</h2>
