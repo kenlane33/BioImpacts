@@ -1,4 +1,5 @@
 import "./styles.css"
+import Markdown from 'markdown-to-jsx';
 
 const imps2 = [
   "if(^,2).say(A)", // matchParentPick(struc)=>struc.parent.pick=2
@@ -25,6 +26,16 @@ export default function App() {
               flavor: "RISK",
               id: 3,
               name: "Sleep apena",
+              markdown:`
+$$ ifC(Mild)
+## Mild stuff
+Mild stuff
+$$ ifC(Moderate)
+## Moderate stuff
+Moderate stuff
+$$ ifC(Severe)
+Severe stuff
+              `,
               impacts: [
                 'if(3).say(Woo)',
                 `if(^,Mild)
@@ -93,13 +104,15 @@ export default function App() {
         // else k.ancestors = () => [struc, ...struc.ancestors()] // append the rest
       })
     }
-    console.log(struc.flavor, struc.name, struc.ancestors())
+    //console.log('decorateStruc()', struc.flavor, struc.name, struc.ancestors())
     // if(struc.impacts) struc.impacts = cleanImpacts(struc.impacts)
     const pickOfJour = jours[struc.id]
     if (pickOfJour) {
       struc.pick = pickOfJour
       pickOfJour.push(() => struc) // jour[3] is a fn that returns this struc
     }
+    struc.picks = struc.ancestors().map(x=>[x.flavor,x.pick[1]])
+    // console.log('picks=',struc.picks)
     return [struc, ...decorateStrucs(struc.children, jours, struc)]
   }
   //----/////////////----------------------
@@ -166,7 +179,7 @@ export default function App() {
     const p1 = safeIth(struc.parent().pick, 1)
     const p2 = safeIth(struc.parent().pick, 2)
     const hasMatch = ((p1 === valToMatch) || (p2 === valToMatch))
-    console.log( `${(hasMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${p1} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
+    // console.log( `${(hasMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${p1} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
     return hasMatch
   }
 
@@ -199,7 +212,7 @@ export default function App() {
       // oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
       oneMatched ||= safeIth(struc.pick, 2) === ifParams.trim()
     }
-    console.log([oneMatched, `if${flavorToMatch||''}(`, ifParams, struc])
+    //console.log([oneMatched, `if${flavorToMatch||''}(`, ifParams, struc])
     return oneMatched
   }
 
@@ -252,7 +265,7 @@ export default function App() {
         <div key="pick" style={{marginLeft: 30, color: "#066"}}>
           {struc.pick && struc.pick[1]}
         </div>
-
+        {struc.markdown && <MarkdownIf md={struc.markdown} />}
         <div style={{marginLeft: 40, color: "#606"}}>
           {runImps(struc.impacts, struc)}
         </div>
@@ -273,11 +286,98 @@ export default function App() {
       <Struc struc={s} key={s.name || "?"} />
     ))
   )
-  // const imps = (digImpacts(x))
+  const Foxer = ({txt}) => <div>Fox: {txt}</div>
+  const CatImg = ()=><img alt="" style={{width:50, display:'inline'}} src="https://octodex.github.com/images/stormtroopocat.jpg"/>
 
-
+  const mdOptions = (h, rest={}) => {
+    let o = {}
+    Object.entries(h).forEach(([k,v])=>{
+      o[k] = {component:v}
+    })
+    return { overrides: o, ...rest }
+  }
+  const MarkdownIf =({md}) => {
+    const mds = md.split('$$')
+    console.log('mds=',mds)
+    return (
+      <>
+        {mds.map( (m,i) =>
+          <Markdown key={i} options={mdOptions({Foxer,CatImg})}>
+            {m}
+          </Markdown>
+        )}
+      </>
+    )
+  }
+  //-------------------------------------------
   return (
     <div className="App">
+      {/* <MarkdownIf md='#ppdspfd\nboo' />
+      <Markdown options={mdOptions({Foxer,CatImg})}>{`
+<Foxer txt="hoo"/>
+> "This is not the code you are looking for."
+<CatImg />
+
+> 
+
+\`\`\`
+Sample text here...
+\`\`\`
+
+Syntax highlighting
+
+\`\`\`js
+var foo = function (bar) {
+  return bar++;
+};
+console.log(foo(5));
+\`\`\`
+
+## Tables
+
+| Option | Description |
+| ------ | ----------- |
+| data   | path to data files to supply the data that will be passed into templates. |
+| engine | engine to be used for processing templates. Handlebars is the default. |
+| ext    | extension to be used for dest files. |
+
+Right aligned columns
+
+| Option | Description |
+| ------:| -----------:|
+| data   | path to data files to supply the data that will be passed into templates. |
+| engine | engine to be used for processing templates. Handlebars is the default. |
+| ext    | extension to be used for dest files. |
+
+
+## Links
+<a href="http://example.com/" target="_blank">Hello, world!</a>
+[link text](http://dev.nodeca.com)
+
+[link with title](http://nodeca.github.io/pica/demo/ "title text!")
+
+Autoconverted link https://github.com/nodeca/pica (enable linkify to see)
+
+
+## Images
+<img style="width:50px" src="https://octodex.github.com/images/minion.png"/>
+<img style="width:50px" src="https://octodex.github.com/images/stormtroopocat.jpg"/>
+
+Like links, Images also have a footnote style syntax
+
+
+With a reference later in the document defining the URL location:
+
+<img style="width:50px" src="https://octodex.github.com/images/dojocat.jpg" />
+
+
+## Plugins
+
+The killer feature of \`markdown-it\` is very effective support of
+[syntax plugins](https://www.npmjs.org/browse/keyword/markdown-it-plugin).
+
+
+`}</Markdown> */}
       <h3>Dig</h3>
       {/* <pre>{str}</pre> */}
       {/* <pre>{txt}</pre> */}
