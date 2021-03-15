@@ -63,7 +63,7 @@ export default function App() {
 
   const jours = {
     "1": ["Symptom: Difficulty sleeping", 1, null],
-    "2": ["Diagnosis: CPOD", "Severe", 3],
+    "2": ["Diagnosis: CPOD", "Mild", 2],
     "3": ["Sleep apena", "Moderate", null],
     "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
   }
@@ -150,7 +150,7 @@ export default function App() {
       wasFound ||= ((p2+'') === valToMatch) // checks index as well?
       if (flavorToMatch) {
         wasFound &&= (x.flavor[0] === flavorToMatch[0])
-        console.log(x.pick[1], x.flavor[0], flavorToMatch[0], x.flavor[0] === flavorToMatch[0])
+        // console.log(x.pick[1], x.flavor[0], flavorToMatch[0], x.flavor[0] === flavorToMatch[0])
       }
       return wasFound // if false keep looping b/c of the way .some() works, if true, done, so break!
     })
@@ -163,9 +163,11 @@ export default function App() {
   }
 
   const matchParentPick = (struc, valToMatch, pickIndexToCompare = 1) => {
-    const pp = safeIth(struc.parent().pick, pickIndexToCompare)
-    console.log( `${(pp === valToMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${pp} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
-    return pp === valToMatch
+    const p1 = safeIth(struc.parent().pick, 1)
+    const p2 = safeIth(struc.parent().pick, 2)
+    const hasMatch = ((p1 === valToMatch) || (p2 === valToMatch))
+    console.log( `${(hasMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${p1} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
+    return hasMatch
   }
 
   const safeSplit = (str,char) => (str.includes(char)) ? str.split(char) : ([str])
@@ -244,8 +246,12 @@ export default function App() {
 
         <br />
 
-        <div style={{marginLeft: 30, color: "#066"}}>{struc.picker}</div>
-        <div style={{marginLeft: 30, color: "#066"}}>{struc.pick && struc.pick[1]}</div>
+        <div key="picker" style={{marginLeft: 30, color: "#066"}}>
+          {struc.picker}
+        </div>
+        <div key="pick" style={{marginLeft: 30, color: "#066"}}>
+          {struc.pick && struc.pick[1]}
+        </div>
 
         <div style={{marginLeft: 40, color: "#606"}}>
           {runImps(struc.impacts, struc)}
