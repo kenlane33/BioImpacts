@@ -32,17 +32,18 @@ ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
 ## Sleep apnea
 **Periodically stop breathing when asleep**
 ).pointer( lung-R, Difficulty breathing, red )
-.sumRank(40).sumUp(
+.sumRank(40).sumUp(  
 **Summary - Mild stuff**
-)
-ifC(Severe).say(
+)`,
+`
+ifC(Severe).say(    
 ## Severe stuff
-Severe stuff
+Severe **stuff**
 )
               `],
               impaxxcts: [
                 'if(2).say(Woo)',
-                `if(^,Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
+                `if(Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
                 `if(Mild).prior().say(Diabetes).say(Strokes).say(Heart attacks)`,
                 `if(Severe).prior().say(Sudden death while sleeping)`
               ],
@@ -59,9 +60,10 @@ ifAct(Sometimes).strikethrough(#lungy)
                     "if(Never    ).doNothing()",
                     "ifRisk(Moderate).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
                     `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
-**Removes** moderate & severe impacts
-Nightly is the **best** choice
+#### Nightly is the best choice
+**Removes** moderate & severe impacts 
 <Foxer txt="says Ting ting da wadoop a wow"/>
+<CatImg />
                       ).delete()
                     `
                   ]
@@ -129,16 +131,8 @@ Nightly is the **best** choice
         .flat(1000)
         .filter((x) => !!x)
 
-  const compactJson = (json) =>
-    json
-      .replace(/\[\n\s+/gm, "[")
-      .replace(/\s+"/gm, '"')
-      .replace(/"\n\s+\]/gm, '"]')
+  const compactJson = (json) => json.replace(/\[\n\s+/gm, "[").replace(/\s+"/gm, '"').replace(/"\n\s+\]/gm, '"]')
 
-  // const imps = cleanImpacts(digImpacts(data)),
-  //   txt = compactJson(JSON.stringify(imps, null, 2))
-  // console.log(str)
-  
   structures = decorateStruc(structures, jours)
   console.log( structures )
   const str = JSON.stringify( structures, null, 2)
@@ -227,8 +221,11 @@ Nightly is the **best** choice
     return <pre style={stl}>{txt}</pre> 
   }
   const FixImp = (props) => <SimpleImp {...{...props, stl:{fontWeight:'bold'}}} />
-  const SayImp = (props) => {
-    return(<SimpleImp {...{...props, elType:'s'}} />)
+  const SayImp = ({tf,parts}) => {
+    let [__,txt] = parts
+    txt = txt.replace(/^[ \t]+/,'')
+    if (txt.match(/^\n/)) return <Markdown options={mdOptions({Foxer,CatImg})}>{txt}</Markdown>
+    return(<SimpleImp tf={tf} parts={[txt]} elType='s' />)
   }
 
   const runImps = (imps, struc) => {
@@ -263,7 +260,7 @@ Nightly is the **best** choice
 
         <br />
 
-        <div key={"picker_"+struc.name} style={{marginLeft: 30, color: "#066"}}>
+        <div key={"picker_"+struc.picker} style={{marginLeft: 30, color: "#066"}}>
           {struc.picker}
         </div>
         <div key={"pick_"+struc.name} style={{marginLeft: 30, color: "#066"}}>
