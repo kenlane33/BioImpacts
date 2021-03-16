@@ -1,5 +1,6 @@
 import "./styles.css"
 import Markdown from 'markdown-to-jsx';
+import React from 'react'
 
 const imps2 = [
   "if(^,2).say(A)", // matchParentPick(struc)=>struc.parent.pick=2
@@ -26,32 +27,24 @@ export default function App() {
               flavor: "RISK",
               id: 3,
               name: "Sleep apena",
-              markdown:`
-$$ ifC(Mild)
-## Mild stuff
-Mild stuff
-$$ ifC(Moderate)
-## Moderate stuff
-Moderate stuff
-$$ ifC(Severe)
+              impacts:[`
+ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
+## Sleep apnea
+**Periodically stop breathing when asleep**
+).pointer( lung-R, Difficulty breathing, red )
+.sumRank(40).sumUp(
+**Summary - Mild stuff**
+)
+ifC(Severe).say(
+## Severe stuff
 Severe stuff
-              `,
-              impacts: [
-                'if(3).say(Woo)',
-                `if(^,Mild)
-                    .say(Feel tired)
-                    .say(Dry mouth)
-                    .say(Mild snoring)`,
-
-                `if(Mild)
-                    .prior()
-                    .say(Diabetes)
-                    .say(Strokes)
-                    .say(Heart attacks)`,
-
-                `if(Severe)
-                    .prior()
-                    .say(Sudden death while sleeping)`
+)
+              `],
+              impaxxcts: [
+                'if(2).say(Woo)',
+                `if(^,Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
+                `if(Mild).prior().say(Diabetes).say(Strokes).say(Heart attacks)`,
+                `if(Severe).prior().say(Sudden death while sleeping)`
               ],
               children: [
                 {
@@ -59,10 +52,18 @@ Severe stuff
                   name: "Use CPAP breathing assistant when sleeping",
                   picker: "PickEnum(Never,Sometimes,Nightly)",
                   id: 4,
+                  markdXXXown:`
+ifAct(Sometimes).strikethrough(#lungy)
+                  `,
                   impacts: [
                     "if(Never    ).doNothing()",
                     "ifRisk(Moderate).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
-                    "ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(Removes moderate & severe impacts.)"
+                    `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
+**Removes** moderate & severe impacts
+Nightly is the **best** choice
+<Foxer txt="says Ting ting da wadoop a wow"/>
+                      ).delete()
+                    `
                   ]
                 }
               ]
@@ -220,19 +221,22 @@ Severe stuff
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
     const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`
+    stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
-    return (elType==='s')?
-    <span style={stl}>{txt}</span> :
-    <div  style={stl}>{txt}</div>
+    if (elType==='s') stl = {display:'inline',...stl}
+    return <pre style={stl}>{txt}</pre> 
   }
   const FixImp = (props) => <SimpleImp {...{...props, stl:{fontWeight:'bold'}}} />
-  const SayImp = (props) => <SimpleImp {...{...props, elType:'s'}} />
+  const SayImp = (props) => {
+    return(<SimpleImp {...{...props, elType:'s'}} />)
+  }
 
   const runImps = (imps, struc) => {
     return (imps && imps.map((imp) => runImp(imp, struc))) || []
   }
   const runImp = (impRaw, struc) => {
     const imp = parseImp(impRaw)
+    // console.log('imp=',imp)
     let ifExpResult = false
     return imp.filter(x=>x.length>0).map((impParts) => {
       const [verb, ...rest] = impParts.map(x=>x.trim())
@@ -259,17 +263,17 @@ Severe stuff
 
         <br />
 
-        <div key="picker" style={{marginLeft: 30, color: "#066"}}>
+        <div key={"picker_"+struc.name} style={{marginLeft: 30, color: "#066"}}>
           {struc.picker}
         </div>
-        <div key="pick" style={{marginLeft: 30, color: "#066"}}>
+        <div key={"pick_"+struc.name} style={{marginLeft: 30, color: "#066"}}>
           {struc.pick && struc.pick[1]}
         </div>
-        {struc.markdown && <MarkdownIf md={struc.markdown} />}
+        {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>}
         <div style={{marginLeft: 40, color: "#606"}}>
           {runImps(struc.impacts, struc)}
         </div>
-        <div style={{marginLeft: 40, color: "#600"}}>
+        <div  key={'json'} style={{marginLeft: 40, color: "#600"}}>
           {/* <pre>{JSON.stringify(struc.impacts, null, 2)}</pre>
           <pre>{JSON.stringify(struc.parentImpacts, null, 2)}</pre> */}
         </div>
@@ -296,18 +300,31 @@ Severe stuff
     })
     return { overrides: o, ...rest }
   }
-  const MarkdownIf =({md}) => {
-    const mds = md.split('$$')
-    console.log('mds=',mds)
+  const MarkdownIf =({md,struc}) => {
+    if (md && md.includes(').')){
+    md = md || ''
+    const mds = md.trim().split(').').map(x=>x.trim()).filter(x=>(x!==''))
     return (
-      <>
-        {mds.map( (m,i) =>
-          <Markdown key={i} options={mdOptions({Foxer,CatImg})}>
-            {m}
-          </Markdown>
-        )}
-      </>
-    )
+      <React.Fragment key={'MarkdownIf'+struc}>
+        {mds.map( (m,i) =>{
+          let [iffer, ...mm] = m.split('\n')
+          iffer = iffer.trim()
+          mm = mm.join('\n')
+          const ifIsTrue = if_Imp(iffer, struc, iffer[2])
+          console.log(`iffer="${iffer}"== ${ifIsTrue}  | mm=`,mm, 'ifIsTrue=' )
+          return (
+            <div style={{border:'solid 1px grey', padding:18}}>
+              {''+ifIsTrue}
+              <Markdown key={i} options={mdOptions({Foxer,CatImg})}>
+                {mm}
+              </Markdown>
+              <br/>
+            </div>
+          )
+        })}
+      </React.Fragment>
+    )} 
+    else return null
   }
   //-------------------------------------------
   return (
