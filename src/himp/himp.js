@@ -1,8 +1,12 @@
-const parseImp = (imp) => imp.split(/\s*\./g).map((i) => (
-  i.trim()
-  .split(/[()]/g)
-  .filter((x) => x !== "")
-))
+import {noBlanks} from '../helpers/array'
+
+const parseImp = (imp) => (
+  imp.split(/\s*\./g).map((x) => {
+    const ret = noBlanks(x.trim().split(/[()]/))
+    console.log(' parseImp=',ret)
+    return ret
+  })
+)
 const parentArr = (struc) => {
   let arr = [struc]
   while(struc.parent){ arr.push(struc = struc.parent()) }

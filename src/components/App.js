@@ -60,7 +60,10 @@ export default function App() {
     if (elType==='s') stl = {display:'inline',...stl}
     return <pre style={stl}>{txt}</pre> 
   }
-  const FixImp = (props) => <SimpleImp {...{...props, stl:{fontWeight:'bold'}}} />
+  const FixImp = (p) => {
+    p.parts.push('FIX'); 
+    return <SimpleImp {...{...p, stl:{fontWeight:'bold'}}} />
+  }
   const SayImp = ({tf,parts}) => {
     let [__,txt] = parts
     txt = txt.replace(/^[ \t]+/,'')
@@ -76,11 +79,11 @@ export default function App() {
     console.log('imp=',imp)
     let ifExpResult = false
     return noBlanks(imp).map((impParts) => {
-      const [verb, ...params] = trimAll(impParts)
+      const [verb, params] = trimAll(impParts)
       console.log( [verb, params] )
       if ( verb.startsWith("if") ) {
         const flav = safeIth(verb,2)// grabs X of ifX()
-        ifExpResult = if_Imp(params[0], struc, flav)
+        ifExpResult = if_Imp(params, struc, flav)
         return <SimpleImp tf={ifExpResult} parts={impParts} />
       } else if (verb === "say") {
         return <SayImp tf={ifExpResult} parts={impParts} />
