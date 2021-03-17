@@ -1,6 +1,7 @@
-import "./styles.css"
+import "../styles/styles.css"
 import Markdown from 'markdown-to-jsx';
 import React from 'react'
+import {prepStruc, parseImp} from '../himp/himp'
 
 const imps2 = [
   "if(^,2).say(A)", // matchParentPick(struc)=>struc.parent.pick=2
@@ -29,19 +30,16 @@ export default function App() {
               name: "Sleep apena",
               impacts:[`
 ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
-## Sleep apnea
-**Periodically stop breathing when asleep**
+**Sleep apnea:** *periodically* **stop breathing** when asleep
 ).pointer( lung-R, Difficulty breathing, red )
 .sumRank(40).sumUp(  
 **Summary - Mild stuff**
 )`,
 `
 ifC(Severe).say(    
-## Severe stuff
-Severe **stuff**
+Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Severe
 )
-              `],
-              impaxxcts: [
+              `,
                 'if(2).say(Woo)',
                 `if(Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
                 `if(Mild).prior().say(Diabetes).say(Strokes).say(Heart attacks)`,
@@ -53,17 +51,16 @@ Severe **stuff**
                   name: "Use CPAP breathing assistant when sleeping",
                   picker: "PickEnum(Never,Sometimes,Nightly)",
                   id: 4,
-                  markdXXXown:`
-ifAct(Sometimes).strikethrough(#lungy)
-                  `,
                   impacts: [
+                    `ifAct(Sometimes).strikethrough(#lungy)`,
                     "if(Never    ).doNothing()",
                     "ifRisk(Moderate).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
                     `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
-#### Nightly is the best choice
-<CatImg /> 
-<span>**Removes** moderate & *severe* impacts</span>
-<Foxer txt="says Ting ting da wadoop a wow"/>
+**Nightly** is the best choice<br/>
+<span>**Removes** moderate & **severe** *impacts*</span>
+
+<CatImg /> <span> <-- a React component with an image </span>
+<Foxer txt=": this is a silly React component that adds the word Fox as a prefix"/>
                       ).delete()
                     `
                   ]
@@ -76,77 +73,18 @@ ifAct(Sometimes).strikethrough(#lungy)
     }
 
   const jours = {
-    "1": ["Symptom: Difficulty sleeping", 1, null],
+    "1": ["Symptom: Difficulty sleeping", 1, 1],
     "2": ["Diagnosis: CPOD", "Mild", 2],
     "3": ["Sleep apena", "Moderate", null],
     "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
   }
-
-  const parseImp = (imp) => imp.split(/\s*\./g).map((i) => (
-    i.trim()
-    .split(/[()]/g)
-    .filter((x) => x !== "")
-  ))
-  const cleanImpacts = (imps) => imps.map((imp) => parseImp(imp))
-
-  const parentArr = (struc) => {
-    let arr = [struc]
-    while(struc.parent){ arr.push(struc = struc.parent()) }
-    return arr
-  }
-  //----/////////////----------------------
-  const decorateStruc = (struc, jours, parent) => {
-    struc.ancestors = () => parentArr(struc)//[struc, ...((parent) ? parent.ancestors() : [])]
-    const kids = struc.children
-    if (kids){
-      kids.forEach((k) => {
-        k.parent = () => struc // a function that returns the parent (not a ref since that would make a graph loop!)
-        k.parentImpacts = struc.impacts
-        // if (!struc.ancestors) k.ancestors = () => [struc]
-        // // append first
-        // else k.ancestors = () => [struc, ...struc.ancestors()] // append the rest
-      })
-    }
-    //console.log('decorateStruc()', struc.flavor, struc.name, struc.ancestors())
-    // if(struc.impacts) struc.impacts = cleanImpacts(struc.impacts)
-    const pickOfJour = jours[struc.id]
-    if (pickOfJour) {
-      struc.pick = pickOfJour
-      pickOfJour.push(() => struc) // jour[3] is a fn that returns this struc
-    }
-    struc.picks = struc.ancestors().map(x=>[x.flavor,x.pick[1]])
-    // console.log('picks=',struc.picks)
-    return [struc, ...decorateStrucs(struc.children, jours, struc)]
-  }
-  //----/////////////----------------------
-  const decorateStrucs = (strucs, jours) =>(
-    (strucs && strucs.map((x) => decorateStruc(x, jours) )) || []
-  )
-
-  const digImpact = (struc) => [struc.impacts, digImpacts(struc.children)],
-    digImpacts = (strucs) =>
-      strucs &&
-      strucs
-        .map((x) => digImpact(x))
-        .flat(1000)
-        .filter((x) => !!x)
-
-  const compactJson = (json) => json.replace(/\[\n\s+/gm, "[").replace(/\s+"/gm, '"').replace(/"\n\s+\]/gm, '"]')
-
-  structures = decorateStruc(structures, jours)
+  const ff = [
+    {txt:'\n## Fooness\n**foo** boo', tag:'#21.R.Mild'},
+    {txt:null, tag:'#SpecialTag'},
+  ]
+  
+  structures = prepStruc(structures, jours)
   console.log( structures )
-  const str = JSON.stringify( structures, null, 2)
-
-  const Sayer = ({imps: impsArr}) => {
-    const hasSay = (x) => x[0] === "say"
-    return impsArr.map((imps) =>
-      imps.filter(hasSay).map((imp) => (
-        <p key={imp[1]}>
-          {imps[0][1]}: {imp[1]}
-        </p>
-      ))
-    )
-  }
 
   const matchAncestorPick = (struc, valToMatch, flavorToMatch) => {
     let wasFound = false
@@ -255,25 +193,25 @@ ifAct(Sometimes).strikethrough(#lungy)
   //----//////-----------
   const Struc = ({struc}) => {
     return [
-      <div key={struc.name || "?"}>
+      <div key={'top'+(struc.id || "?")}>
         {`${struc.flavor} : ${struc.name} [${struc.id}]`}
 
         <br />
 
-        <div key={"picker_"+struc.picker} style={{marginLeft: 30, color: "#066"}}>
+        <div key={"picker_"+struc.id} style={{marginLeft: 30, color: "#066"}}>
           {struc.picker}
         </div>
-        <div key={"pick_"+struc.name} style={{marginLeft: 30, color: "#066"}}>
+        <div key={"pick_"+struc.id} style={{marginLeft: 30, color: "#066"}}>
           {struc.pick && struc.pick[1]}
         </div>
-        {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>}
-        <div style={{marginLeft: 40, color: "#606"}}>
+        {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
+        <div key={'imps_'+struc.id} style={{marginLeft: 40, color: "#606"}}>
           {runImps(struc.impacts, struc)}
         </div>
-        <div  key={'json'} style={{marginLeft: 40, color: "#600"}}>
-          {/* <pre>{JSON.stringify(struc.impacts, null, 2)}</pre>
-          <pre>{JSON.stringify(struc.parentImpacts, null, 2)}</pre> */}
-        </div>
+        {/* <div  key={'json'+struc.id} style={{marginLeft: 40, color: "#600"}}>
+          <pre>{JSON.stringify(struc.impacts, null, 2)}</pre>
+          <pre>{JSON.stringify(struc.parentImpacts, null, 2)}</pre>
+        </div> */}
         {/* <pre style={{fontSize: 10}}>
           {JSON.stringify({...struc, children: undefined}, null, 2)}
         </pre> */}
@@ -296,32 +234,6 @@ ifAct(Sometimes).strikethrough(#lungy)
       o[k] = {component:v}
     })
     return { overrides: o, ...rest }
-  }
-  const MarkdownIf =({md,struc}) => {
-    if (md && md.includes(').')){
-    md = md || ''
-    const mds = md.trim().split(').').map(x=>x.trim()).filter(x=>(x!==''))
-    return (
-      <React.Fragment key={'MarkdownIf'+struc}>
-        {mds.map( (m,i) =>{
-          let [iffer, ...mm] = m.split('\n')
-          iffer = iffer.trim()
-          mm = mm.join('\n')
-          const ifIsTrue = if_Imp(iffer, struc, iffer[2])
-          console.log(`iffer="${iffer}"== ${ifIsTrue}  | mm=`,mm, 'ifIsTrue=' )
-          return (
-            <div style={{border:'solid 1px grey', padding:18}}>
-              {''+ifIsTrue}
-              <Markdown key={i} options={mdOptions({Foxer,CatImg})}>
-                {mm}
-              </Markdown>
-              <br/>
-            </div>
-          )
-        })}
-      </React.Fragment>
-    )} 
-    else return null
   }
   //-------------------------------------------
   return (
