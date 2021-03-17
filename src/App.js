@@ -61,9 +61,9 @@ ifAct(Sometimes).strikethrough(#lungy)
                     "ifRisk(Moderate).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
                     `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
 #### Nightly is the best choice
-**Removes** moderate & severe impacts 
+<CatImg /> 
+<span>**Removes** moderate & *severe* impacts</span>
 <Foxer txt="says Ting ting da wadoop a wow"/>
-<CatImg />
                       ).delete()
                     `
                   ]
@@ -288,7 +288,7 @@ ifAct(Sometimes).strikethrough(#lungy)
     ))
   )
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
-  const CatImg = ()=><img alt="" style={{width:50, display:'inline'}} src="https://octodex.github.com/images/stormtroopocat.jpg"/>
+  const CatImg = ()=><img alt="" style={{width:50, display:'inline', verticalAlign: 'middle'}} src="https://octodex.github.com/images/stormtroopocat.jpg"/>
 
   const mdOptions = (h, rest={}) => {
     let o = {}
