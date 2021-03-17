@@ -1,6 +1,7 @@
 import React from 'react'
 import Markdown from 'markdown-to-jsx'
 import {parseImp} from './himp/himp'
+import {safeIth} from './helpers/array'
 
 const compactJson = (json) => json.replace(/\[\n\s+/gm, "[").replace(/\s+"/gm, '"').replace(/"\n\s+\]/gm, '"]')
 // const str = JSON.stringify( structures, null, 2)
@@ -56,3 +57,25 @@ digImpacts = (strucs) =>
     )} 
     else return null
   }
+
+
+  const imps2 = [
+    "if(^,2).say(A)", // matchParentPick(struc)=>struc.parent.pick=2
+    "if(^^,2).say(B).say(C)", // matchAncestorPick(pick)=>struc.ancestors.map(x=>x.pick).contains(pick)
+    "if(^,Mild).say(D)" //
+  ]
+
+  const matchParentPick = (struc, valToMatch, pickIndexToCompare = 1) => {
+    const p1 = safeIth(struc.parent().pick, 1)
+    const p2 = safeIth(struc.parent().pick, 2)
+    const hasMatch = ((p1 === valToMatch) || (p2 === valToMatch))
+    // console.log( `${(hasMatch)?'Match':'Nope'} Does if(${valToMatch}) == ${p1} on parent's pick:\n ${struc.parent().pick.slice(0,3)}`)
+    return hasMatch
+  }
+
+
+  const safeParseInt = (str) => {
+    const i = parseInt(str) // also handles numbers correctly
+    return isNaN(i) ? null : i
+  }
+
