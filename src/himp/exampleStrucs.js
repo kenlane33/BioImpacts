@@ -18,7 +18,7 @@ const exampleStrucs =
           impacts:[`
 ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
-).pointer( lung-R, Difficulty breathing, red )
+).pointer( lung-R, Difficulty breathing, red ).fix(#S.life,+4%)
 .sumRank(40).sumUp(  
 **Summary - Mild stuff**
 )`,

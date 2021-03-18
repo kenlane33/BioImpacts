@@ -8,10 +8,15 @@ const mdOptions = (h, rest={}) => {
   return { overrides: o, ...rest }
 }
 
-const Marky = (p) => (
-  <Markdown {...{...p}}>
-    {p.children}
-  </Markdown>
-)
+const Marky = (rawProps) => {
+  const {compsO, children, txt, ...props} = rawProps
+  props.options = compsO && mdOptions(compsO)
+  const txt2 = txt || children
+  return(
+    <Markdown {...{...props}}>
+      {txt2}
+    </Markdown>
+  )
+}
 
 export {mdOptions, Marky}

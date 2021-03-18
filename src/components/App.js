@@ -1,7 +1,8 @@
 
 import "../styles/styles.css"
-import Markdown from 'markdown-to-jsx';
-import React from 'react'
+//import Markdown from 'markdown-to-jsx'
+import {Marky, mdOptions} from './marky'
+import React, {useEffect} from 'react'
 import {prepStruc, parseImp} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth, trimAll,noBlanks,splitTrim} from '../helpers/array'
@@ -23,7 +24,7 @@ export default function App() {
     {txt:null, tag:'#SpecialTag'},
   ]
   
-  console.log( structures )
+  console.log( 'structures=', structures )
 
   const matchAncestorPick = (struc, val, flavor) => {
     let wasFound = false
@@ -61,13 +62,13 @@ export default function App() {
     return <pre style={stl}>{txt}</pre> 
   }
   const FixImp = (p) => {
-    p.parts.push('FIX'); 
+    // useEffect(()=>{p.parts.push('FIX')},[p.parts])
     return <SimpleImp {...{...p, stl:{fontWeight:'bold'}}} />
   }
   const SayImp = ({tf,parts}) => {
     let [__,txt] = parts
     txt = txt.replace(/^[ \t]+/,'')
-    if (txt.match(/^\n/)) return <Markdown options={mdOptions({Foxer,CatImg})}>{txt}</Markdown>
+    if (txt.match(/^\n/)) return <Marky compsO={{Foxer,CatImg}} txt={txt} />
     return(<SimpleImp tf={tf} parts={[txt]} elType='s' />)
   }
 
@@ -76,11 +77,11 @@ export default function App() {
   }
   const runImp = (impRaw, struc) => {
     const imp = parseImp(impRaw) 
-    console.log('imp=',imp)
+    // console.log('imp=',imp)
     let ifExpResult = false
     return noBlanks(imp).map((impParts) => {
       const [verb, params] = trimAll(impParts)
-      console.log( [verb, params] )
+      //console.log( '[verb, params]', [verb, params] )
       if ( verb.startsWith("if") ) {
         const flav = safeIth(verb,2)// grabs X of ifX()
         ifExpResult = if_Imp(params, struc, flav)
@@ -94,23 +95,34 @@ export default function App() {
       }
     })
   }
-
+var keySafe = {}
+const ks = (k) => {
+  if(keySafe[k]) {
+    keySafe[k] += 1
+    console.log(`duplicate key "${k}" has ${keySafe[k]}`)
+  }
+  else keySafe[k] = 1
+  return k
+}
+setTimeout(()=>{console.log(keySafe)},2000)
   //----//////-----------
   const Struc = ({struc}) => {
+    if(!struc.id) return null
     return [
-      <div key={'top'+(struc.id || "?")}>
+      <div key={ks('top_'+(struc.id || "?"))}>
         {`${struc.flavor} : ${struc.name} [${struc.id}]`}
 
         <br />
 
-        <div key={"picker_"+struc.id} style={{marginLeft: 30, color: "#066"}}>
+        <div key={ks("picker_"+struc.id)} style={{marginLeft: 30, color: "#066"}}>
           {struc.picker}
         </div>
-        <div key={"pick_"+struc.id} style={{marginLeft: 30, color: "#066"}}>
-          {struc.pick && struc.pick[1]}
-        </div>
+        <span style={{marginLeft: 30, color:'#ccc'}}>Pick = </span>
+        <span key={ks("pick_"+struc.id)} style={{color: "#050", fontWeight:600}}>
+          {safeIth( struc.pick, 1)}
+        </span>
         {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
-        <div key={'imps_'+struc.id} style={{marginLeft: 40, color: "#606"}}>
+        <div key={ks('imps_'+struc.id)} style={{marginLeft: 40, color: "#606"}}>
           {runImps(struc.impacts, struc)}
         </div>
         {/* <div  key={'json'+struc.id} style={{marginLeft: 40, color: "#600"}}>
