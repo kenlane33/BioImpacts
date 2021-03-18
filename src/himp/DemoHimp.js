@@ -5,6 +5,7 @@ import {prepStruc} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth} from '../helpers/array'
 import {runImps} from './himp'
+import {ks, ksGo} from '../helpers/keySafe'
 
 //======================/////////============================
 export default function DemoHimp() {
@@ -56,36 +57,26 @@ export default function DemoHimp() {
     return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' />)
   }
 
-
-  var keySafe = {}
-  const ks = (k) => {
-    if(keySafe[k]) {
-      keySafe[k] += 1
-      console.log(`duplicate key "${k}" has ${keySafe[k]}`)
-    }
-    else keySafe[k] = 1
-    return k
-  }
-  setTimeout(()=>{console.log(keySafe)},2000)
   //----//////-----------
   const Struc = ({struc, Comps}) => {
     if(!struc.id) return null
+    const {id} = struc
     return [
-      <div key={ks('top_'+(struc.id || "?"))} style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
-        <div key={ks('struc_'+struc.id)}>
+      <div key={ks('top_'+(id || "?"))} style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
+        <div key={ks('struc_'+id)}>
           {`${struc.flavor} : ${struc.name} [${struc.id}]`}
         </div>
-        <div key={ks("picker_"+struc.id)} style={{marginLeft: 30, color: "#066"}}>
+        <div key={ks("picker_"+id)} style={{marginLeft: 30, color: "#066"}}>
           {struc.picker}
         </div>
         <span style={{marginLeft: 30, color:'#ccc'}}>Pick = </span>
-        <span key={ks("pick_"+struc.id)} style={{color: "#050", fontWeight:600}}>
+        <span key={ks("pick_"+id)} style={{color: "#050", fontWeight:600}}>
           {safeIth( struc.pick, 1)}
         </span>
         {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
-        <div key={ks('imps_'+struc.id)} style={{marginLeft: 5, color: "#606"}}>
+        <span key={ks('imps_'+id)} style={{marginLeft: 5, color: "#606"}}>
           {runImps(struc.impacts, struc, Comps)}
-        </div>
+        </span>
       </div>,
       Strucs({strucs: struc.children, Comps}) // recurse
     ]
@@ -119,3 +110,4 @@ export default function DemoHimp() {
     </div>
   )
 }
+if (!ks.went) ksGo()

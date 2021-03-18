@@ -61,28 +61,29 @@ const calcIf = (ifParams, struc, verb) => {
 const runImp = (impRaw, struc, Comps) => {
   const imp = parseImp(impRaw) 
   let ifResult = false
-  return noBlanks(imp).map((impParts) => {
+  return noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
     let CompForVerb = Comps[verb]
     //console.log( '[verb, params]', [verb, params] )
+    const bind = {key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
       const Comp = Comps.if
-      return <Comp tf={ifResult} parts={impParts} />
+      return <Comp {...bind} />
     }
     //-------------------------//////--------------------------
     else if ( verb.startsWith("andIf") ) {
       ifResult = ifResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
       const Comp = Comps.if
-      return <Comp tf={ifResult} parts={impParts} />
+      return <Comp {...bind} />
     } 
     //----------//////--------------------------
     else if (CompForVerb) {
-      return <CompForVerb tf={ifResult} parts={impParts} />
+      return <CompForVerb {...bind} />
     } 
     else {
-      return <Comps.Raw tf={ifResult} parts={impParts} />
+      return <Comps.Raw {...bind} />
     }
   })
 }
