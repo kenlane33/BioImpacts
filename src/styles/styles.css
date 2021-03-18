@@ -5,3 +5,7 @@
 .App p {
   margin: 0px;
 }
+
+pre {
+  margin: 0;
+}
