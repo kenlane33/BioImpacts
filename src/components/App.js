@@ -1,8 +1,8 @@
 
 import "../styles/styles.css"
 //import Markdown from 'markdown-to-jsx'
-import {Marky, mdOptions} from './marky'
-import React, {useEffect} from 'react'
+import {Marky} from './marky'
+import  React  from 'react'
 import {prepStruc, parseImp} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth, trimAll,noBlanks,splitTrim} from '../helpers/array'
@@ -55,7 +55,7 @@ export default function App() {
   const tfStr = (tf) => (tf) ? "T" : "F"
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
-    const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`
+    const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
     stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
     if (elType==='s') stl = {display:'inline',...stl}
@@ -67,9 +67,9 @@ export default function App() {
   }
   const SayImp = ({tf,parts}) => {
     let [__,txt] = parts
-    txt = txt.replace(/^[ \t]+/,'')
+    txt = txt.replace(/^[ \t]+/,'') // trimLeft except for \n
     if (txt.match(/^\n/)) return <Marky compsO={{Foxer,CatImg}} txt={txt} />
-    return(<SimpleImp tf={tf} parts={[txt]} elType='s' />)
+    return(<SimpleImp tf={tf} parts={`say(${txt})`} elType='s' />)
   }
 
   const runImps = (imps, struc) => {
@@ -145,26 +145,12 @@ setTimeout(()=>{console.log(keySafe)},2000)
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
   const CatImg = ()=><img alt="" style={{width:50, display:'inline', verticalAlign: 'middle'}} src="https://octodex.github.com/images/stormtroopocat.jpg"/>
 
-  const mdOptions = (h, rest={}) => {
-    let o = {}
-    Object.entries(h).forEach(([k,v])=>{
-      o[k] = {component:v}
-    })
-    return { overrides: o, ...rest }
-  }
   //-------------------------------------------
   return (
     <div className="App">
-      {/* <MarkdownIf md='#ppdspfd\nboo' />
-       */}
-      <h3>Dig</h3>
-      {/* <pre>{str}</pre> */}
-      {/* <pre>{txt}</pre> */}
+      <h3>Health Impact Code (Himp)</h3>
       <Strucs strucs={structures} />
-      {/* <Sayer imps={imps} /> */}
-
-      <h2>Start editing to see some magic happen!</h2>
-      {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
+      <h1>☯</h1>
     </div>
   )
 }
