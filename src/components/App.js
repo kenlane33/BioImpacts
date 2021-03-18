@@ -85,7 +85,7 @@ export default function App() {
         <div style={{marginTop:8, borderBottom:'3px solid #ddd'}}></div>
       </div>
     )
-    return(<SimpleImp tf={tf} parts={`${txt}`} elType='s' />)
+    return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' />)
   }
 
   const runImps = (imps, struc) => {
@@ -107,6 +107,9 @@ export default function App() {
         return <SimpleImp tf={ifExpResult} parts={['AND',...impParts]} />
       } 
       else if (verb === "say") {
+        return <SayImp tf={ifExpResult} parts={impParts} />
+      } 
+      else if (verb === "sumSay") {
         return <SayImp tf={ifExpResult} parts={impParts} />
       } 
       else if (verb === "fix") {

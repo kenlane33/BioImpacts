@@ -19,11 +19,10 @@ const exampleStrucs =
 ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
 ).pointer( lung-R, Difficulty breathing, red ).fix(#S.life,+4%)
-.sumRank(40).sumUp(  
+.sumRank(40).sumSay(  
 **Summary - Mild stuff**
-)`,
-`
-ifC(Severe).say(    
+)
+ifC(Mild).andIf(10).say(    
 Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Severe
 )
           `,

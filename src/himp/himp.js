@@ -1,7 +1,7 @@
 import {noBlanks} from '../helpers/array'
 
 const parseImp = (imp) => (
-  imp.split(/\s*\./g).map((x) => {
+  imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g).map((x) => {
     const ret = noBlanks(x.trim().split(/[()]/))
     // console.log(' parseImp=',ret)
     return ret
