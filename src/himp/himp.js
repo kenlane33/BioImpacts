@@ -1,5 +1,6 @@
 import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
 
+//----/////////------------------------------------
 const parseImp = (imp) => (
   imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g).map((x) => {
     const ret = noBlanks(x.trim().split(/[()]/))
@@ -7,6 +8,7 @@ const parseImp = (imp) => (
     return ret
   })
 )
+//----//////////------------------------------------
 const parentArr = (struc) => {
   let arr = [struc]
   while(struc.parent){ arr.push(struc = struc.parent()) }
@@ -33,11 +35,11 @@ const prepStruc = (struc, jours, parent) => {
   // now recurse
   return [struc, ...prepStrucs(struc.children, jours, struc)]
 }
-//----/////////////----------------------
+//----///////////----------------------
 const prepStrucs = (strucs, jours) =>(
   (strucs && strucs.map((x) => prepStruc(x, jours) )) || []
 )
-
+//----//////////////////------------------------------------
 const matchAncestorPick = (struc, val, flavor) => {
   return (flavor) ? 
     struc.ancFlavPicks.includes(`${flavor||''}_${val}`) :
@@ -57,7 +59,7 @@ const calcIf = (ifParams, struc, verb) => {
   } 
   return gotMatch
 }
-
+//----///////------------------------------------
 const runImp = (impRaw, struc, Comps) => {
   const imp = parseImp(impRaw) 
   let ifResult = false
@@ -87,7 +89,7 @@ const runImp = (impRaw, struc, Comps) => {
     }
   })
 }
-
+//----////////------------------------------------
 const runImps = makeDoFnOnEachFn(runImp)
 
 
