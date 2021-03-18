@@ -22,7 +22,7 @@ ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(
 .sumRank(40).sumSay(  
 **Summary - Mild stuff**
 )
-ifC(Mild).andIf(10).say(    
+ifC(Mild).andIf(1).say(    
 Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Severe
 )
           `,
