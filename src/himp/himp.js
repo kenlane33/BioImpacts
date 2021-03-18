@@ -29,7 +29,7 @@ const prepStruc = (struc, jours, parent) => {
   const ancestors = parentArr(struc)
   struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick[1]}`)
   struc.ancPicks     = ancestors.map(x=>`${x.pick[1]}`)
-  console.log('ancFlavPicks=',JSON.stringify(struc.ancFlavPicks))
+  // console.log('ancFlavPicks=',JSON.stringify(struc.ancFlavPicks))
   // now recurse
   return [struc, ...prepStrucs(struc.children, jours, struc)]
 }

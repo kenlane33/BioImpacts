@@ -27,10 +27,10 @@ ifC(Severe).say(
 Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Severe
 )
           `,
-            'if(2).say(Woo)',
-            `if(Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
-            `if(Mild).prior().say(Diabetes).say(Strokes).say(Heart attacks)`,
-            `if(Severe).prior().say(Sudden death while sleeping)`
+          'if(2).say(Woo)',
+          `if(Mild).say(Feel tired).say(Dry mouth).say(Mild snoring)`,
+          `if(Mild).prior().say(Diabetes).say(Strokes).say(Heart attacks)`,
+          `if(Severe).prior().say(Sudden death while sleeping)`,
           ],
           children: [
             {
@@ -41,7 +41,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
               impacts: [
                 `ifAct(Sometimes).strikethrough(#lungy)`,
                 "if(Never    ).doNothing()",
-                "ifRisk(Moderate).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
+                "ifRisk(Moderate).andIfAction(Nightly  ).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
                 `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
 **Nightly** is the best choice<br/>
 <span>**Removes** moderate & **severe** *impacts*</span>

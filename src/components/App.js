@@ -42,8 +42,9 @@ export default function App() {
     // return wasFound // this returns the final result from the func
   }
 
-  const if_Imp = (ifParams, struc, flavorToMatch) => {
+  const calcIf = (ifParams, struc, verb) => {
     // If any of the params match the picks of self or ancestors with the right flavor
+    const flavorToMatch = safeIth(verb,2) // grabs the X in ifX()
     let gotMatch = false
     if (ifParams) {
       const ps = splitTrim(ifParams, ',')
@@ -58,10 +59,14 @@ export default function App() {
   const tfStr = (tf) => (tf) ? "T" : "F"
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
-    const txt = ` ${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
+    const isIf = parts && (parts[0].slice(0,2) === 'if')
+    let txt = (isIf) ? `${parts.join('(')})`: `└${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
     stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
     if (elType==='s') stl = {display:'inline',...stl}
+    if (!isIf) {
+      stl = {borderLeft:'1px solid grey',...stl, marginLeft:10, paddingLeft:10 }
+    }
     return <pre style={stl}>{txt}</pre> 
   }
   const FixImp = (p) => {
@@ -71,8 +76,16 @@ export default function App() {
   const SayImp = ({tf,parts}) => {
     let [__,txt] = parts
     txt = txt.replace(/^[ \t]+/,'') // trimLeft except for \n
-    if (txt.match(/^\n/)) return <Marky compsO={{Foxer,CatImg}} txt={txt} />
-    return(<SimpleImp tf={tf} parts={`say(${txt})`} elType='s' />)
+    if (txt.match(/^\n/)) return (
+      <div style={{marginLeft:10, padding:'2px 0 15px 10px', border:'solid 1px grey'}}>
+        <pre style={{margin:'0 0 8px 0',paddingBottom:0,borderBottom:'3px solid #ddd'}}>
+          └{tfStr(tf)}: &lt;Markdown&gt;
+        </pre>
+        <Marky compsO={{Foxer,CatImg}} txt={txt} />
+        <div style={{marginTop:8, borderBottom:'3px solid #ddd'}}></div>
+      </div>
+    )
+    return(<SimpleImp tf={tf} parts={`${txt}`} elType='s' />)
   }
 
   const runImps = (imps, struc) => {
@@ -85,15 +98,21 @@ export default function App() {
     return noBlanks(imp).map((impParts) => {
       const [verb, params] = trimAll(impParts)
       //console.log( '[verb, params]', [verb, params] )
-      if ( verb.startsWith("if") ) {
-        const flav = safeIth(verb,2)// grabs X of ifX()
-        ifExpResult = if_Imp(params, struc, flav)
+      if (      verb.startsWith("if") ) {
+        ifExpResult = calcIf(params, struc, verb)
         return <SimpleImp tf={ifExpResult} parts={impParts} />
-      } else if (verb === "say") {
+      }
+      else if ( verb.startsWith("andIf") ) {
+        ifExpResult = ifExpResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
+        return <SimpleImp tf={ifExpResult} parts={['AND',...impParts]} />
+      } 
+      else if (verb === "say") {
         return <SayImp tf={ifExpResult} parts={impParts} />
-      } else if (verb === "fix") {
+      } 
+      else if (verb === "fix") {
         return <FixImp tf={ifExpResult} parts={impParts} />
-      } else {
+      } 
+      else {
         return <SimpleImp tf={ifExpResult} parts={impParts} />
       }
     })
@@ -112,7 +131,7 @@ setTimeout(()=>{console.log(keySafe)},2000)
   const Struc = ({struc}) => {
     if(!struc.id) return null
     return [
-      <div key={ks('top_'+(struc.id || "?"))}>
+      <div key={ks('top_'+(struc.id || "?"))} style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
         {`${struc.flavor} : ${struc.name} [${struc.id}]`}
 
         <br />
@@ -125,7 +144,7 @@ setTimeout(()=>{console.log(keySafe)},2000)
           {safeIth( struc.pick, 1)}
         </span>
         {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
-        <div key={ks('imps_'+struc.id)} style={{marginLeft: 40, color: "#606"}}>
+        <div key={ks('imps_'+struc.id)} style={{marginLeft: 5, color: "#606"}}>
           {runImps(struc.impacts, struc)}
         </div>
         {/* <div  key={'json'+struc.id} style={{marginLeft: 40, color: "#600"}}>
