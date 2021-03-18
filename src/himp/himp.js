@@ -14,12 +14,11 @@ const parentArr = (struc) => {
 }
 //----/////////////----------------------
 const prepStruc = (struc, jours, parent) => {
-  struc.ancestors = () => parentArr(struc)
   const kids = struc.children
   if (kids){
     kids.forEach((k) => {
       k.parent = () => struc // a function that returns the parent (not a ref since that would make a graph loop!)
-      k.parentImpacts = struc.impacts
+      // k.parentImpacts = struc.impacts
     })
   }
   const pickOfJour = jours[struc.id]
@@ -27,8 +26,10 @@ const prepStruc = (struc, jours, parent) => {
     struc.pick = pickOfJour
     pickOfJour.push(() => struc) // struc.pick[3] is a fn that returns this struc
   }
-  struc.picks = struc.ancestors().map(x=>[x.flavor[0],x.pick[1]])
-  console.log('picks=',JSON.stringify(struc.picks))
+  const ancestors = parentArr(struc)
+  struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick[1]}`)
+  struc.ancPicks     = ancestors.map(x=>`${x.pick[1]}`)
+  console.log('ancFlavPicks=',JSON.stringify(struc.ancFlavPicks))
   // now recurse
   return [struc, ...prepStrucs(struc.children, jours, struc)]
 }

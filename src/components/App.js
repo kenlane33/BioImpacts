@@ -27,16 +27,19 @@ export default function App() {
   console.log( 'structures=', structures )
 
   const matchAncestorPick = (struc, val, flavor) => {
-    let wasFound = false
-    struc.ancestors().some( (x) => { // similar to forEach, but returning true breaks the loop
-      wasFound ||= ((safeIth( x.pick, 1 )+'') === val) // console.log(`if(${valToMatch}) p1==${p1}?${(p1 === valToMatch)}, p2==${p2}?${(p2 === valToMatch)}, val=${valToMatch}, Pick=${x.pick.slice(0,-1)}`)
-      wasFound ||= ((safeIth( x.pick, 2 )+'') === val) // checks index as well?
-      if (flavor) {
-        wasFound &&= (x.flavor[0] === flavor[0]) // console.log(x.pick[1], x.flavor[0], flavorToMatch[0], x.flavor[0] === flavorToMatch[0])
-      }
-      return wasFound // if false keep looping b/c of the way .some() works, if true, done, so break!
-    })
-    return wasFound // this returns the final result from the func
+    return (flavor) ? 
+      struc.ancFlavPicks.includes(`${flavor||''}_${val}`) :
+      struc.ancPicks.includes(val)
+    // let wasFound = false
+    // struc.ancestors().some( (x) => { // similar to forEach, but returning true breaks the loop
+    //   wasFound ||= ((safeIth( x.pick, 1 )+'') === val) // console.log(`if(${valToMatch}) p1==${p1}?${(p1 === valToMatch)}, p2==${p2}?${(p2 === valToMatch)}, val=${valToMatch}, Pick=${x.pick.slice(0,-1)}`)
+    //   wasFound ||= ((safeIth( x.pick, 2 )+'') === val) // checks index as well?
+    //   if (flavor) {
+    //     wasFound &&= (x.flavor[0] === flavor[0]) // console.log(x.pick[1], x.flavor[0], flavorToMatch[0], x.flavor[0] === flavorToMatch[0])
+    //   }
+    //   return wasFound // if false keep looping b/c of the way .some() works, if true, done, so break!
+    // })
+    // return wasFound // this returns the final result from the func
   }
 
   const if_Imp = (ifParams, struc, flavorToMatch) => {
