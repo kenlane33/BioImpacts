@@ -3,7 +3,7 @@ import {Marky} from '../components/marky'
 import  React  from 'react'
 import {prepStruc, parseImp} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
-import {safeIth, trimAll,noBlanks,splitTrim} from '../helpers/array'
+import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
 
 //======================/////============================
 export default function DemoHimp() {
@@ -57,7 +57,7 @@ export default function DemoHimp() {
   const tfStr = (tf) => (tf) ? "T" : "F"
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
-    const isIf = parts && (parts[0].slice(0,2) === 'if')
+    const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')) )
     let txt = (isIf) ? `${parts.join('(')})`: `└${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
     stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
@@ -85,10 +85,6 @@ export default function DemoHimp() {
     )
     return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' />)
   }
-  const runImps = (imps, struc, Comps) => {
-    // console.log('Comps=',Comps)
-    return (imps && imps.map((imp) => runImp(imp, struc, Comps))) || []
-  }
   const runImp = (impRaw, struc, Comps) => {
     const imp = parseImp(impRaw) 
     let ifExpResult = false
@@ -101,7 +97,7 @@ export default function DemoHimp() {
       }
       else if ( verb.startsWith("andIf") ) {
         ifExpResult = ifExpResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
-        return <SimpleImp tf={ifExpResult} parts={['AND',...impParts]} />
+        return <SimpleImp tf={ifExpResult} parts={impParts} />
       } 
       else if (verb === "say") {
         return <Comps.Say tf={ifExpResult} parts={impParts} />
@@ -117,16 +113,18 @@ export default function DemoHimp() {
       }
     })
   }
-var keySafe = {}
-const ks = (k) => {
-  if(keySafe[k]) {
-    keySafe[k] += 1
-    console.log(`duplicate key "${k}" has ${keySafe[k]}`)
+
+  const runImps = makeDoFnOnEachFn(runImp)
+  var keySafe = {}
+  const ks = (k) => {
+    if(keySafe[k]) {
+      keySafe[k] += 1
+      console.log(`duplicate key "${k}" has ${keySafe[k]}`)
+    }
+    else keySafe[k] = 1
+    return k
   }
-  else keySafe[k] = 1
-  return k
-}
-setTimeout(()=>{console.log(keySafe)},2000)
+  setTimeout(()=>{console.log(keySafe)},2000)
   //----//////-----------
   const Struc = ({struc, Comps}) => {
     if(!struc.id) return null
