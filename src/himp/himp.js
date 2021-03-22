@@ -15,7 +15,8 @@ const parentArr = (struc) => {
   return arr
 }
 //----/////////////----------------------
-const prepStruc = (struc, jours, parent) => {
+const prepStruc = (struc, jours, comps, store) => {
+  // console.log('prepStruc( ).store=',store)
   const kids = struc.children
   if (kids){
     kids.forEach((k) => {
@@ -31,13 +32,14 @@ const prepStruc = (struc, jours, parent) => {
   const ancestors = parentArr(struc)
   struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick[1]}`)
   struc.ancPicks     = ancestors.map(x=>`${x.pick[1]}`)
+  struc.impCompOs = runImps(struc.impacts, struc, comps, store)
   // console.log('ancFlavPicks=',JSON.stringify(struc.ancFlavPicks))
   // now recurse
-  return [struc, ...prepStrucs(struc.children, jours, struc)]
+  return [struc, ...prepStrucs(struc.children, jours, comps, store)]
 }
 //----///////////----------------------
-const prepStrucs = (strucs, jours) =>(
-  (strucs && strucs.map((x) => prepStruc(x, jours) )) || []
+const prepStrucs = (strucs, jours, comps, store) =>(
+  (strucs && strucs.map((s) => prepStruc(s, jours, comps, store) )) || []
 )
 //----//////////////////------------------------------------
 const matchAncestorPick = (struc, val, flavor) => {
@@ -60,56 +62,65 @@ const calcIf = (ifParams, struc, verb) => {
   return gotMatch
 }
 //----///////------------------------------------
-const runImp = (impRaw, struc, Comps, store) => {
+const runImp = (impRaw, struc, comps, store) => {
   const imp = parseImp(impRaw) 
   let ifResult = false
   let collectedSays = []
-  const toRender = noBlanks(imp).map((impParts,i) => {
+  // console.log('store=',store)
+  const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
-    let CompForVerb = Comps[verb]
+    let CompForVerb = comps[verb] || comps.Raw
     //console.log( '[verb, params]', [verb, params] )
-    const bind = {comp: CompForVerb, key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
+    let bind = {comp: CompForVerb, key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
-      const Comp = Comps.if
-      return <Comp {...bind} />
+      collectedSays = []
+      bind = {...bind, comp: comps.if, tf: ifResult}
+      return bind
+      // return <Comps.Raw {...bind} />
     }
     //-------------------------//////--------------------------
     else if ( verb.startsWith("andIf") ) {
       ifResult = ifResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
-      const Comp = Comps.if
-      return <Comp {...bind} />
+      bind = {...bind, comp: comps.if, tf: ifResult}
+      return bind
+      // return <Comps.Raw {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "say") {
       collectedSays.push(bind) //; console.log(`tag="${params}"`)
-      return <bind.comp {...bind} />
+      return bind
+      // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "strikeThrough") {
-      const boundOnes = store[params.trim()]
-      console.log(params.trim(), 'store[params.trim()]=', boundOnes )
-      boundOnes.map(x => x.comp = Comps.greeny )
+      const taggedImps = store[params.trim()]
+      // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+      taggedImps.map(x => x.comp = comps.greeny )
       console.log('strikeThrough().store=',store)
       if (ifResult) {}//TODO: do the thing!!!
-      return <Comps.Raw {...bind} />
+      return bind
+      // return <Comps.Raw {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "tag") {
       store[params.trim()] = collectedSays //; console.log(`tag="${params}"`)
-      console.log('tag(). store=',store)
-      return <Comps.Raw {...bind} />
+      console.log('tag().store=',store)
+      return bind
+      // return <Comps.Raw {...bind} />
     } 
     //----------//////--------------------------
     else if (CompForVerb) {
-      return <bind.comp {...bind} />
+      return bind
+      // return <bind.comp {...bind} />
     } 
     else {
-      return <Comps.Raw {...bind} />
+      return bind
+      // return <Comps.Raw {...bind} />
     }
   })
-  return toRender//[impRet, store]
+  return impCompOs//[impRet, store]
 }
 //----////////------------------------------------
 const runImps = makeDoFnOnEachFn(runImp)

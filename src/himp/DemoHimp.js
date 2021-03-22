@@ -10,15 +10,6 @@ import {ks, ksGo} from '../helpers/keySafe'
 //======================/////////============================
 export default function DemoHimp() {
 
-  const jours = {
-    "1": ["Symptom: Difficulty sleeping", 1, 1],
-    "2": ["Diagnosis: CPOD", "Mild", 2],
-    "3": ["Sleep apena", "Moderate", null],
-    "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
-  }
-
-  const structures = prepStruc(exampleStrucs, jours)
-  console.log( 'structures=', structures )
 
   const ff = [
     {txt:'\n## Fooness\n**foo** boo', tag:'#21.R.Mild'},
@@ -27,7 +18,7 @@ export default function DemoHimp() {
 
   const tfStr = (tf) => (tf) ? "T" : "F"
   const GreenImp =(p) => {
-    return <SimpleImp {...{...p, stl:{fontWeight:'bold',color:'white',background:'green',textDecoration:'line-through'}}} />
+    return <SimpleImp {...{...p, stl:{fontWeight:'bold',color:'white',background:'#dfd',textDecoration:'line-through'}}} />
   }
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
@@ -64,6 +55,7 @@ export default function DemoHimp() {
   const Struc = ({struc, Comps, store}) => {
     if(!struc.id) return null
     const {id} = struc
+    console.log('struc.impCompOs=', struc.impCompOs)
     return [
       <div key={ks('top_'+(id || "?"))} style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
         <div key={ks('struc_'+id)}>
@@ -78,7 +70,9 @@ export default function DemoHimp() {
         </span>
         {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
         <span key={ks('imps_'+id)} style={{marginLeft: 5, color: "#606"}}>
-          {runImps(struc.impacts, struc, Comps, store)}
+          {struc.impCompOs.map(x=>x.map(ico=>(
+            ico.comp && <ico.comp {...ico} />
+          )))}
         </span>
       </div>,
       Strucs({strucs: struc.children, Comps, store}) // recurse
@@ -97,6 +91,14 @@ export default function DemoHimp() {
     <pre>{`${tfStr(tf)}: ${parts.join('(')})`}</pre>
   )
   //-------------------------------------------
+  const jours = {
+    "1": ["Symptom: Difficulty sleeping", 1, 1],
+    "2": ["Diagnosis: CPOD", "Mild", 2],
+    "3": ["Sleep apena", "Moderate", null],
+    "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
+  }
+
+  //-------------------------------------------
   const comps = {
     if:SimpleImp,
     andIf:SimpleImp,
@@ -108,6 +110,9 @@ export default function DemoHimp() {
     greeny:GreenImp,
   }
   let store = {}
+  const structures = prepStruc(exampleStrucs, jours, comps, store)
+  console.log( 'structures=', structures )
+  //-------------------------------------------
   return (
     <div className="App">
       <h3>Health Impact Code (Himp)</h3>

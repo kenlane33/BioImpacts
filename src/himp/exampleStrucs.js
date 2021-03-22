@@ -18,7 +18,7 @@ const exampleStrucs =
           impacts:[`
 ifC(Mild,OR,Moderate).set(life,-3).tag(#lungy).say(Strike ME!).say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
-).pointer( lung-R, Difficulty breathing, red ).fix(#S.life,+4%)
+).pointer( lung-R, Difficulty breathing, red ).hurt(#Sum.life,-4%)
 .sumRank(40).sumSay(  
 **Summary - Mild stuff**
 )
@@ -41,7 +41,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
                 `ifAct(Sometimes).strikeThrough(#lungy)`,
                 "if(Never    ).doNothing()",
                 "ifRisk(Moderate).andIfAction(Nightly  ).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
-                `ifAction(Nightly  ).delete(Moderate).strikeSays(Severe).say(
+                `ifAction(Nightly  ).delete(Moderate).fix(#Sum.life,+4%).strikeSays(Severe).say(
 **Nightly** is the best choice<br/>
 <span>**Removes** moderate & **severe** *impacts*</span>
 
