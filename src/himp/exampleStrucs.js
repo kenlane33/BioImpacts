@@ -38,7 +38,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
               picker: "PickEnum(Never,Sometimes,Nightly)",
               id: 4,
               impacts: [
-                `ifAct(Sometimes).strikeThrough(#lungy)`,
+                `ifAct(Nightly).strikeThrough(#lungy)`,
                 "if(Never    ).doNothing()",
                 "ifRisk(Moderate).andIfAction(Nightly  ).strikeSays(Moderate).say(Reduces moderate & severe impacts.)",
                 `ifAction(Nightly  ).delete(Moderate).fix(#Sum.life,+4%).strikeSays(Severe).say(

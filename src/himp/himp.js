@@ -71,52 +71,53 @@ const runImp = (impRaw, struc, comps, store) => {
     const [verb, params] = trimAll(impParts)
     let CompForVerb = comps[verb] || comps.Raw
     //console.log( '[verb, params]', [verb, params] )
-    let bind = {comp: CompForVerb, key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
+    let compO = {
+      comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
+      tf:   ifResult,   parts:impParts
+    }
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
       collectedSays = []
-      bind = {...bind, comp: comps.if, tf: ifResult}
-      return bind
+      compO = {...compO, comp: comps.if, tf: ifResult}
+      return compO
       // return <Comps.Raw {...bind} />
     }
     //-------------------------//////--------------------------
     else if ( verb.startsWith("andIf") ) {
       ifResult = ifResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
-      bind = {...bind, comp: comps.if, tf: ifResult}
-      return bind
+      compO = {...compO, comp: comps.if, tf: ifResult}
+      return compO
       // return <Comps.Raw {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "say") {
-      collectedSays.push(bind) //; console.log(`tag="${params}"`)
-      return bind
+      collectedSays.push(compO) //; console.log(`tag="${params}"`)
+      return compO
       // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "strikeThrough") {
-      const taggedImps = store[params.trim()]
-      // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
-      taggedImps.map(x => x.comp = comps.greeny )
-      console.log('strikeThrough().store=',store)
-      if (ifResult) {}//TODO: do the thing!!!
-      return bind
-      // return <Comps.Raw {...bind} />
+      if (ifResult) {
+        const taggedImps = store[params.trim()]
+        // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+        taggedImps.map(x => x.comp = comps.greeny )
+        console.log('strikeThrough().store=',store)
+      }
+      return compO
     } 
     //----------//////--------------------------
     else if (verb === "tag") {
       store[params.trim()] = collectedSays //; console.log(`tag="${params}"`)
       console.log('tag().store=',store)
-      return bind
-      // return <Comps.Raw {...bind} />
+      return compO
     } 
     //----------//////--------------------------
     else if (CompForVerb) {
-      return bind
-      // return <bind.comp {...bind} />
+      return compO
     } 
     else {
-      return bind
+      return compO
       // return <Comps.Raw {...bind} />
     }
   })
