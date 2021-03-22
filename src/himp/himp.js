@@ -60,14 +60,15 @@ const calcIf = (ifParams, struc, verb) => {
   return gotMatch
 }
 //----///////------------------------------------
-const runImp = (impRaw, struc, Comps) => {
+const runImp = (impRaw, struc, Comps, store) => {
   const imp = parseImp(impRaw) 
   let ifResult = false
-  return noBlanks(imp).map((impParts,i) => {
+  let collectedSays = []
+  const toRender = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
     let CompForVerb = Comps[verb]
     //console.log( '[verb, params]', [verb, params] )
-    const bind = {key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
+    const bind = {comp: CompForVerb, key:`imp_${i}_${struc.id}`, tf:ifResult, parts: impParts}
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
@@ -81,13 +82,34 @@ const runImp = (impRaw, struc, Comps) => {
       return <Comp {...bind} />
     } 
     //----------//////--------------------------
+    else if (verb === "say") {
+      collectedSays.push(bind) //; console.log(`tag="${params}"`)
+      return <bind.comp {...bind} />
+    } 
+    //----------//////--------------------------
+    else if (verb === "strikeThrough") {
+      const boundOnes = store[params.trim()]
+      console.log(params.trim(), 'store[params.trim()]=', boundOnes )
+      boundOnes.map(x => x.comp = Comps.greeny )
+      console.log('strikeThrough().store=',store)
+      if (ifResult) {}//TODO: do the thing!!!
+      return <Comps.Raw {...bind} />
+    } 
+    //----------//////--------------------------
+    else if (verb === "tag") {
+      store[params.trim()] = collectedSays //; console.log(`tag="${params}"`)
+      console.log('tag(). store=',store)
+      return <Comps.Raw {...bind} />
+    } 
+    //----------//////--------------------------
     else if (CompForVerb) {
-      return <CompForVerb {...bind} />
+      return <bind.comp {...bind} />
     } 
     else {
       return <Comps.Raw {...bind} />
     }
   })
+  return toRender//[impRet, store]
 }
 //----////////------------------------------------
 const runImps = makeDoFnOnEachFn(runImp)

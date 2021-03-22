@@ -26,6 +26,9 @@ export default function DemoHimp() {
   ]
 
   const tfStr = (tf) => (tf) ? "T" : "F"
+  const GreenImp =(p) => {
+    return <SimpleImp {...{...p, stl:{fontWeight:'bold',color:'white',background:'green',textDecoration:'line-through'}}} />
+  }
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
     const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')) )
@@ -58,7 +61,7 @@ export default function DemoHimp() {
   }
 
   //----//////-----------
-  const Struc = ({struc, Comps}) => {
+  const Struc = ({struc, Comps, store}) => {
     if(!struc.id) return null
     const {id} = struc
     return [
@@ -75,18 +78,19 @@ export default function DemoHimp() {
         </span>
         {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
         <span key={ks('imps_'+id)} style={{marginLeft: 5, color: "#606"}}>
-          {runImps(struc.impacts, struc, Comps)}
+          {runImps(struc.impacts, struc, Comps, store)}
         </span>
       </div>,
-      Strucs({strucs: struc.children, Comps}) // recurse
+      Strucs({strucs: struc.children, Comps, store}) // recurse
     ]
   }
   //----///////-----------
-  const Strucs = ({strucs, Comps}) => (
-    strucs && strucs.map((s) => (
-      <Struc struc={s} Comps={Comps} key={s.name || "?"} />
+  const Strucs = ({strucs, Comps, store}) => {
+    return (
+      strucs && strucs.map((s) => (
+        <Struc store={store} struc={s} Comps={Comps} key={s.name || "?"} />
     ))
-  )
+  )}
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
   const CatImg = ()=><img alt="" style={{width:50, display:'inline', verticalAlign: 'middle'}} src="https://octodex.github.com/images/stormtroopocat.jpg"/>
   const StrikeImp = ({tf,parts}) =>(
@@ -101,11 +105,13 @@ export default function DemoHimp() {
     fix:FixImp,
     strikethrough: StrikeImp,
     Raw:SimpleImp,
+    greeny:GreenImp,
   }
+  let store = {}
   return (
     <div className="App">
       <h3>Health Impact Code (Himp)</h3>
-      <Strucs strucs={structures} Comps={comps}/>
+      <Strucs store={store} strucs={structures} Comps={comps}/>
       <h1>☯</h1>
     </div>
   )
