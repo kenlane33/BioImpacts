@@ -56,25 +56,43 @@ export default function DemoHimp() {
     if(!struc.id) return null
     const {id} = struc
     console.log('struc.impCompOs=', struc.impCompOs)
+    const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
+      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
+        {children}
+    </div>)
+    const Picker = ({children}) => (<div key={ks("picker_"+id)} 
+      style={{marginLeft: 30, color: "#066"}}>
+        {children}
+    </div>)
+    const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
+      style={{background:'#ddd', padding:5}}>
+        <span style={{background:'white',padding:2,lineHeight:2,fontSize:10}}>{`${flavor} :`}</span>
+        {` ${name} [${id}]`}
+    </div>
+    const PadGrey = ({children}) => (<span key={ks("pick_"+id)} 
+      style={{marginLeft: 30, color:'#ccc'}}>
+        {children}
+    </span>)
+    const PickShow = ({struc:{pick, id}}) => (<span key={ks("pick_"+id)} 
+      style={{color: "#050", fontWeight:600}}>
+      {safeIth( pick, 1)}
+    </span>)
+    const RendImpCompOs = ({struc:{impCompOs}}) => (<span key={ks('imps_'+id)} 
+      style={{marginLeft: 5, color: "#606"}}>
+        {impCompOs.map(x=>x.map(ico=>(
+          ico.comp && <ico.comp {...ico} />
+    ))
+    )}
+  </span>)
+
     return [
-      <div key={ks('top_'+(id || "?"))} style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
-        <div key={ks('struc_'+id)}>
-          {`${struc.flavor} : ${struc.name} [${struc.id}]`}
-        </div>
-        <div key={ks("picker_"+id)} style={{marginLeft: 30, color: "#066"}}>
-          {struc.picker}
-        </div>
-        <span style={{marginLeft: 30, color:'#ccc'}}>Pick = </span>
-        <span key={ks("pick_"+id)} style={{color: "#050", fontWeight:600}}>
-          {safeIth( struc.pick, 1)}
-        </span>
-        {/* {struc.markdown && <MarkdownIf key={'md_if'} md={struc.markdown} struc={struc}/>} */}
-        <span key={ks('imps_'+id)} style={{marginLeft: 5, color: "#606"}}>
-          {struc.impCompOs.map(x=>x.map(ico=>(
-            ico.comp && <ico.comp {...ico} />
-          )))}
-        </span>
-      </div>,
+      <Top>
+        <StrucShow struc={struc} />          
+        <Picker>{struc.picker}</Picker>
+        <PadGrey>Pick = </PadGrey>
+        <PickShow struc={struc} />
+        <RendImpCompOs struc={struc} />
+      </Top>,
       Strucs({strucs: struc.children, Comps, store}) // recurse
     ]
   }
@@ -112,6 +130,7 @@ export default function DemoHimp() {
   let store = {}
   const structures = prepStruc(exampleStrucs, jours, comps, store)
   console.log( 'structures=', structures )
+  console.log( 'store=', store )
   //-------------------------------------------
   return (
     <div className="App">

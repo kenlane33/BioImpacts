@@ -14,7 +14,7 @@ const exampleStrucs =
         {
           flavor: "RISK",
           id: 3,
-          name: "Sleep apena",
+          name: "Sleep apnea",
           impacts:[`
 ifC(Mild,OR,Moderate).tag(#lungy)
   .set(life,-3)
