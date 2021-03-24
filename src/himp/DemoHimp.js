@@ -56,27 +56,33 @@ export default function DemoHimp() {
     if(!struc.id) return null
     const {id} = struc
     console.log('struc.impCompOs=', struc.impCompOs)
+    //    ////
     const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
-      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
+    style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
         {children}
     </div>)
+    //    ///////
     const Picker = ({children}) => (<div key={ks("picker_"+id)} 
-      style={{marginLeft: 30, color: "#066"}}>
+    style={{marginLeft: 30, color: "#066"}}>
         {children}
     </div>)
+    //    //////////
     const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
-      style={{background:'#ddd', padding:5}}>
+    style={{background:'#ddd', padding:5}}>
         <span style={{background:'white',padding:2,lineHeight:2,fontSize:10}}>{`${flavor} :`}</span>
         {` ${name} [${id}]`}
     </div>
+    //    ///////
     const PadGrey = ({children}) => (<span key={ks("pick_"+id)} 
-      style={{marginLeft: 30, color:'#ccc'}}>
+    style={{marginLeft: 30, color:'#ccc'}}>
         {children}
     </span>)
+    //    /////////
     const PickShow = ({struc:{pick, id}}) => (<span key={ks("pick_"+id)} 
-      style={{color: "#050", fontWeight:600}}>
+    style={{color: "#050", fontWeight:600}}>
       {safeIth( pick, 1)}
     </span>)
+    //    //////////////
     const RendImpCompOs = ({struc:{impCompOs}}) => (<span key={ks('imps_'+id)} 
       style={{marginLeft: 5, color: "#606"}}>
         {impCompOs.map(x=>x.map(ico=>(
@@ -131,10 +137,14 @@ export default function DemoHimp() {
   const structures = prepStruc(exampleStrucs, jours, comps, store)
   console.log( 'structures=', structures )
   console.log( 'store=', store )
+  const summary = store.sumImps.sort(x=>x.rank).map(x=>x)
   //-------------------------------------------
   return (
     <div className="App">
       <h3>Health Impact Code (Himp)</h3>
+      <pre>{JSON.stringify(summary, null, 2)}</pre>
+      <pre>{JSON.stringify(store.vars, null, 2)}</pre>
+      <pre>{JSON.stringify(store.err, null, 2)}</pre>
       <Strucs store={store} strucs={structures} Comps={comps}/>
       <h1>☯</h1>
     </div>

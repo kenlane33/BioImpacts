@@ -1,4 +1,5 @@
 import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
+import {merge} from '../helpers/objects'
 
 //----/////////------------------------------------
 const parseImp = (imp) => (
@@ -65,7 +66,8 @@ const calcIf = (ifParams, struc, verb) => {
 const runImp = (impRaw, struc, comps, store) => {
   const imp = parseImp(impRaw) 
   let ifResult = false
-  let collectedSays = []
+  let saysOfCurrIf = []
+  let rank = null
   // console.log('store=',store)
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
@@ -75,10 +77,36 @@ const runImp = (impRaw, struc, comps, store) => {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
     }
+    //----///////////----------------------------
+    const nudgeOrSet = (k,newVRaw) => {
+      const vs = store.vars || {}
+      const oldV = vs[k] || 0
+      const newV = (newVRaw+'').replace('%','')
+      const newVInt = parseInt(newV)
+      const isPercent = (newVRaw.length !== newV.length)
+      const hasSign = newV.startsWith('-') || newV.startsWith('+')
+      if (isNaN(newVInt)) {
+        addErr(`Params should look like 6, +5, -2, 3%, -7%, +4% got: ${verb}(${params})`)
+        return
+      }
+      if (isPercent) {
+        vs[k] = (hasSign) ? oldV + (newVInt * oldV) : (newVInt * oldV)
+      } else {
+        vs[k] = (hasSign) ? oldV + (newVInt) : newVInt
+      }
+      return store
+    }
+    console.log('1.nudgeOrSet=',nudgeOrSet('$a',5).vars)
+    console.log('2.nudgeOrSet=',nudgeOrSet('$a','+7').vars)
+    console.log('3.nudgeOrSet=',nudgeOrSet('$a',5).vars)
+    //---------------------------------------------------------------------
+    const addSumImp = (si)  => store.sumImps = [...(store.sumImps||[]), si]
+    const addErr    = (str) => store.err     = [...(store.err||[]), str]
+    const mergeVar  = (k,v) => store.vars   = {...(store.vars||[]), [k]:v}
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
-      collectedSays = []
+      saysOfCurrIf = []
       compO = {...compO, comp: comps.if, tf: ifResult}
       return compO
       // return <Comps.Raw {...bind} />
@@ -91,8 +119,39 @@ const runImp = (impRaw, struc, comps, store) => {
       // return <Comps.Raw {...bind} />
     } 
     //----------//////--------------------------
+    else if (verb === "sumRank") {
+      rank = parseInt(params)
+      if (isNaN(rank)) {
+        addErr(`Number expected for ${verb}(${params})`)
+        rank = 0
+      }
+      return compO
+      // return <bind.comp {...bind} />
+    } 
+    //----------//////--------------------------
+    else if (verb === "set") {
+      console.log('set',params)
+      const ps = (params) && params.split(',')
+      if (ps && ps.length>1) {
+        const [key,val] = params.split(',')
+        // store.vars = merge(store.vars, {[key]: val})
+        mergeVar(key, val)
+      } else {
+        addErr(`Problem parsing ${verb}(${params})`)
+      }
+      return compO
+      // return <bind.comp {...bind} />
+    } 
+    //----------//////--------------------------
+    else if (verb === "sumSay") {
+      addSumImp({...compO, rank})
+      // store.sumImps = [...(store.sumImps||[]), {...compO, rank}]
+      return compO
+      // return <bind.comp {...bind} />
+    } 
+    //----------//////--------------------------
     else if (verb === "say") {
-      collectedSays.push(compO) //; console.log(`tag="${params}"`)
+      saysOfCurrIf.push(compO) //; console.log(`tag="${params}"`)
       return compO
       // return <bind.comp {...bind} />
     } 
@@ -108,7 +167,7 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "tag") {
-      store[params.trim()] = collectedSays //; console.log(`tag="${params}"`)
+      store[params.trim()] = saysOfCurrIf //; console.log(`tag="${params}"`)
       console.log('tag().store=',store)
       return compO
     } 

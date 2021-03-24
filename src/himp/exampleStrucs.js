@@ -18,15 +18,16 @@ const exampleStrucs =
           impacts:[`
 ifC(Mild,OR,Moderate).tag(#lungy)
   .set(life,-3)
-  .say(Strike ME!)
+  .say(Strike out this text via an action since it is tagged as #lungy!)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
   )
+  .sumRank(50).sumSay(Sleep apnea trouble)
   .pointer( lung-R, Difficulty breathing, red )
-  .hurt(#Sum.life,-4%)
   .sumRank(40)
+  .set($lifeYears,-5%)
   .sumSay(  
-**Summary - Mild or Moderate stuff**
+**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$lifeYears} years
   )
 
 ifC(Mild).andIfC(1)
