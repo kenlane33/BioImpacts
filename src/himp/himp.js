@@ -68,7 +68,38 @@ const runImp = (impRaw, struc, comps, store) => {
   let ifResult = false
   let saysOfCurrIf = []
   let rank = null
+  store.vars = store.vars || {}
   // console.log('store=',store)
+  //---------------------------------------------------------------------
+  const addErr    = (str) => store.err     = [...(store.err||[]), str]
+  const addSumImp = (si)  => store.sumImps = [...(store.sumImps||[]), si]
+  const mergeVar  = (k,v) => store.vars   = {...(store.vars||[]), [k]:v}
+  //----///////////----------------------------
+  const nudgeOrSet = (k,newVRaw, verb, params) => {
+    newVRaw += ''
+    const vs = store.vars
+    const oldV = store.vars[k] || 0
+    const newV = (newVRaw+'').replace('%','')
+    const newVInt = parseInt(newV)
+    const isPercent = (newVRaw.length !== newV.length)
+    const hasSign = (newV.startsWith('-') || newV.startsWith('+'))
+    if (isNaN(newVInt)) {
+      addErr(`Params should look like 6, +5, -2, 3%, -7%, +4% got: ${verb}(${params})`)
+      return
+    }
+    if (isPercent) {
+      const percentOfOld = (newVInt/100.0) * oldV
+      store.vars[k] = (hasSign) ? (oldV + percentOfOld) : percentOfOld
+    } else {
+      store.vars[k] = (hasSign) ? (oldV + newVInt)          : newVInt
+    }
+    console.log({verb, k, '$a':store.vars[k],vs,oldV,newV,newVInt,isPercent,hasSign})
+    return store
+  }
+  nudgeOrSet('$a', '5%', '111')
+  nudgeOrSet('$a','+7', '222')
+  nudgeOrSet('$a','-20%', '333')
+  //----/////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
     let CompForVerb = comps[verb] || comps.Raw
@@ -77,32 +108,6 @@ const runImp = (impRaw, struc, comps, store) => {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
     }
-    //----///////////----------------------------
-    const nudgeOrSet = (k,newVRaw) => {
-      const vs = store.vars || {}
-      const oldV = vs[k] || 0
-      const newV = (newVRaw+'').replace('%','')
-      const newVInt = parseInt(newV)
-      const isPercent = (newVRaw.length !== newV.length)
-      const hasSign = newV.startsWith('-') || newV.startsWith('+')
-      if (isNaN(newVInt)) {
-        addErr(`Params should look like 6, +5, -2, 3%, -7%, +4% got: ${verb}(${params})`)
-        return
-      }
-      if (isPercent) {
-        vs[k] = (hasSign) ? oldV + (newVInt * oldV) : (newVInt * oldV)
-      } else {
-        vs[k] = (hasSign) ? oldV + (newVInt) : newVInt
-      }
-      return store
-    }
-    console.log('1.nudgeOrSet=',nudgeOrSet('$a',5).vars)
-    console.log('2.nudgeOrSet=',nudgeOrSet('$a','+7').vars)
-    console.log('3.nudgeOrSet=',nudgeOrSet('$a',5).vars)
-    //---------------------------------------------------------------------
-    const addSumImp = (si)  => store.sumImps = [...(store.sumImps||[]), si]
-    const addErr    = (str) => store.err     = [...(store.err||[]), str]
-    const mergeVar  = (k,v) => store.vars   = {...(store.vars||[]), [k]:v}
     //-------------------------///--------------------------
     if (      verb.startsWith("if") ) {
       ifResult = calcIf(params, struc, verb)
