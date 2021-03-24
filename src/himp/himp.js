@@ -80,25 +80,27 @@ const runImp = (impRaw, struc, comps, store) => {
     const vs = store.vars
     const oldV = store.vars[k] || 0
     const newV = (newVRaw+'').replace('%','')
-    const newVInt = parseInt(newV)
     const isPercent = (newVRaw.length !== newV.length)
+    const newV_f = parseFloat(newV)
     const hasSign = (newV.startsWith('-') || newV.startsWith('+'))
-    if (isNaN(newVInt)) {
+    if (isNaN(newV_f)) {
       addErr(`Params should look like 6, +5, -2, 3%, -7%, +4% got: ${verb}(${params})`)
       return
     }
     if (isPercent) {
-      const percentOfOld = (newVInt/100.0) * oldV
-      store.vars[k] = (hasSign) ? (oldV + percentOfOld) : percentOfOld
+      const percentOfOld = (newV_f/100.0) * oldV
+      store.vars[k] = (hasSign) ? (oldV + percentOfOld)    : percentOfOld
     } else {
-      store.vars[k] = (hasSign) ? (oldV + newVInt)          : newVInt
+      store.vars[k] = (hasSign) ? (oldV + newV_f)          : newV_f
     }
-    console.log({verb, k, '$a':store.vars[k],vs,oldV,newV,newVInt,isPercent,hasSign})
+    const cmd = `${verb} set(${k}, ${newVRaw}) --->  ${k} = ${store.vars[k]}`
+    console.log(cmd)// + JSON.stringify({verb, k, '$a':store.vars[k], oldV, newV, newV_f, isPercent, hasSign}))
     return store
   }
-  nudgeOrSet('$a', '5%', '111')
-  nudgeOrSet('$a','+7', '222')
-  nudgeOrSet('$a','-20%', '333')
+  nudgeOrSet('$life',      '5', '1.')
+  nudgeOrSet('$life',    '+7', '2.')
+  nudgeOrSet('$life',    '25%', '3.')
+  nudgeOrSet('$life', '-50%', '4.')
   //----/////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
