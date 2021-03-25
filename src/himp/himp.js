@@ -124,35 +124,36 @@ const runImp = (impRaw, struc, comps, store) => {
       addErr(`Problem parsing ${verb}(${pms})`)
     }
   }
-  nudgeOrSetVar('$life',      '5.0', '1.')
-  nudgeOrSetVar('$life',    '+7', '2.')
-  nudgeOrSetVar('$life',    '25%', '3.')
-  nudgeOrSetVar('$life', '-50%', '4.')
+  // nudgeOrSetVar('$life',      '5.0', '1.')
+  // nudgeOrSetVar('$life',    '+7', '2.')
+  // nudgeOrSetVar('$life',    '25%', '3.')
+  // nudgeOrSetVar('$life', '-50%', '4.')
   //----//////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
     const which = `${verb}(${params})`
     let CompForVerb = comps[verb] || comps.Raw
+    const plainIf = verb.replace('and','').replace('or','').replace('If','if')
+    const isIfCmd = plainIf.startsWith('if')
     //console.log( '[verb, params]', [verb, params] )
     let compO = {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
     }
     //-------------------------///--------------------------
-    if (      verb.startsWith("if") ) {
-      ifResult = calcIf(params, struc, verb)
-      saysOfCurrIf = []
+    if ( isIfCmd ) {
+      console.log(verb.slice(verb.indexOf('if')))
+      const calcedIfIsTrue = calcIf(params, struc, plainIf)
+      if ( verb.startsWith("andIf") ) ifResult &&= calcedIfIsTrue
+      if ( verb.startsWith("orIf")  ) ifResult ||= calcedIfIsTrue
+      if ( verb.startsWith("if")  )  {
+        ifResult = calcedIfIsTrue
+        saysOfCurrIf = []
+      }
       compO = {...compO, comp: comps.if, tf: ifResult}
       return compO
       // return <Comps.Raw {...bind} />
     }
-    //-------------------------//////--------------------------
-    else if ( verb.startsWith("andIf") ) {
-      ifResult = ifResult && calcIf(params, struc, verb.slice(3)) // slice to chop off the 'and' from 'andIf()
-      compO = {...compO, comp: comps.if, tf: ifResult}
-      return compO
-      // return <Comps.Raw {...bind} />
-    } 
     //----------//////--------------------------
     else if (verb === "sumRank") {
       rank = safeFloat(params, 0, which)
