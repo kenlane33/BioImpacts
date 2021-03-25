@@ -1,14 +1,21 @@
 import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
 import {merge} from '../helpers/objects'
-
+var ctr = 0
 //----/////////------------------------------------
-const parseImp = (imp) => (
-  imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g).map((x) => {
+const parseImp = (imp) => {
+  let imps
+  // imps = imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g)
+  imps = imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\)[\s\n]*\./gm)
+  // console.log(JSON.stringify(imps))
+  return (
+  imps.map((x) => {
     const ret = noBlanks(x.trim().split(/[()]/))
-    // console.log(' parseImp=',ret)
+    ctr +=1
+    // if((ctr>=8)&&(ctr<=20)) 
+    console.log(ctr+' parseImp=',ret.map(x=>x.replace(/[\n\s]+/gm,'')))
     return ret
   })
-)
+)}
 //----//////////------------------------------------
 const parentArr = (struc) => {
   let arr = [struc]
@@ -187,7 +194,7 @@ const runImp = (impRaw, struc, comps, store) => {
       const asRiskReduction = (x) =>{
         const x_f = safeFloat(x, null, cmdStr)
         if (isNaN(x_f)) addErr(`Number expected for: ${cmdStr})`)
-        return (x_f) ? `${( 1.0 / x_f)}%` : null
+        return (x_f) ? `${( 1.0 / x_f)*100.0}%` : null
       }
       setVar( params, verb, params, asRiskReduction )
       return compO

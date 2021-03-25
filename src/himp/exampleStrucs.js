@@ -18,8 +18,8 @@ const exampleStrucs =
           impacts:[`
           .hide().if(*).show()
 ifC(Mild).orIf(Moderate).tag(#lungy)
-  .set($boo,40)
-  .setRR($boo,+2%)
+  .set($boo,100)
+  .setRR($boo,1.25)
   .say(Strike out this text via an action since it is tagged as #lungy!)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
