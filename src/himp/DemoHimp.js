@@ -56,9 +56,10 @@ export default function DemoHimp() {
     if(!struc.id) return null
     const {id} = struc
     if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
+    if (struc.style) console.log('struc.style',struc.style)
     //    ////
     const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
-    style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
+    style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
         {children}
     </div>)
     //    ///////

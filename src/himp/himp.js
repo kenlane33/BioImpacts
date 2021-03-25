@@ -10,9 +10,10 @@ const parseImp = (imp) => {
   return (
   imps.map((x) => {
     const ret = noBlanks(x.trim().split(/[()]/))
+    if (ret && ret.length>0) ret[0] = ret[0].replace(/^\./,'')
     ctr +=1
     // if((ctr>=8)&&(ctr<=20)) 
-    console.log(ctr+' parseImp=',ret.map(x=>x.replace(/[\n\s]+/gm,'')))
+    // console.log(ctr+' parseImp=',ret.map(x=>x.replace(/[\n\s]+/gm,'')))
     return ret
   })
 )}
@@ -147,13 +148,15 @@ const runImp = (impRaw, struc, comps, store) => {
     const isIfCmd = plainIf.startsWith('if')
     //console.log( '[verb, params]', [verb, params] )
 
-    const alterImps = (fn) =>{
-      const taggedImps = store[params]
+    const alterImps = (taggedImps, fn) =>{
       // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
       if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return false}
       taggedImps.map( fn )
       // console.log('strike().store=',store)
       return true
+    }
+    const alterStruc = (strc, fn) => {
+      fn(struc)//.style = {...(struc.style||{}), ...style}
     }
 
     let compO = {
@@ -222,13 +225,16 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "strike") { // EX: .strike(#scary_ones)
+      if (ifResult) alterImps( store[params], (x) => x.comp = comps.greeny )
+      return compO
+    } 
+    //----------//////--------------------------
+    else if (verb === "hide") { // EX: .hide() or .hide(#scary_ones)
       if (ifResult) {
-        alterImps( (x) => x.comp = comps.greeny )
-        // const taggedImps = store[params]
-        // // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
-        // if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return compO}
-        // taggedImps.map(x => x.comp = comps.greeny )
-        // // console.log('strike().store=',store)
+        console.log(cmdStr, params)
+        params ? 
+          alterImps(store[params], (x) => x.comp = comps.greeny ) :
+          alterStruc( struc, (x) => x.style = {background:'#ddf'})
       }
       return compO
     } 
