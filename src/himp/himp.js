@@ -76,8 +76,7 @@ const runImp = (impRaw, struc, comps, store) => {
   const mergeVar  = (k,v) => store.vars   = {...(store.vars||[]), [k]:v}
   //----///////////----------------------------
   const nudgeOrSet = (k,newVRaw, verb, params) => {
-    newVRaw += ''
-    const vs = store.vars
+    newVRaw += '' // ensure a string
     const oldV = store.vars[k] || 0
     const newV = (newVRaw+'').replace('%','')
     const isPercent = (newVRaw.length !== newV.length)
@@ -96,6 +95,17 @@ const runImp = (impRaw, struc, comps, store) => {
     const cmd = `${verb} set(${k}, ${newVRaw}) --->  ${k} = ${store.vars[k]}`
     console.log(cmd)// + JSON.stringify({verb, k, '$a':store.vars[k], oldV, newV, newV_f, isPercent, hasSign}))
     return store
+  }
+  //----//////------------------
+  const setVar=(params, eqn=(x=>x))=>{
+    console.log('set',params)
+    const ps = (params) && params.split(',')
+    if (ps && ps.length>1) {
+      const [key,val] = params.split(',').map(x=>x.trim())
+      mergeVar(key, eqn(val))
+    } else {
+      addErr(`Problem parsing ${verb}(${params})`)
+    }
   }
   nudgeOrSet('$life',      '5', '1.')
   nudgeOrSet('$life',    '+7', '2.')
@@ -137,17 +147,23 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "set") {
-      console.log('set',params)
-      const ps = (params) && params.split(',')
-      if (ps && ps.length>1) {
-        const [key,val] = params.split(',')
-        // store.vars = merge(store.vars, {[key]: val})
-        mergeVar(key, val)
-      } else {
-        addErr(`Problem parsing ${verb}(${params})`)
-      }
+      setVar(params)
+      // console.log('set',params)
+      // const ps = (params) && params.split(',')
+      // if (ps && ps.length>1) {
+      //   const [key,val] = params.split(',').map(x=>x.trim())
+      //   // store.vars = merge(store.vars, {[key]: val})
+      //   mergeVar(key, val)
+      // } else {
+      //   addErr(`Problem parsing ${verb}(${params})`)
+      // }
       return compO
       // return <bind.comp {...bind} />
+    } 
+    //----------//////--------------------------
+    else if (verb === "setRR") {
+      setVar( params, x=>( 1.0 / parseFloat(x)) )
+      return compO
     } 
     //----------//////--------------------------
     else if (verb === "sumSay") {

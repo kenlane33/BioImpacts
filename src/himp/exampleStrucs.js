@@ -26,8 +26,12 @@ ifC(Mild,OR,Moderate).tag(#lungy)
   .pointer( lung-R, Difficulty breathing, red )
   .sumRank(40)
   .set($lifeYears,-5%)
+  .set($life, 5)    // $life is 5
+  .set($life, +7)   // $life is 12
+  .set($life, 25%)  // $life is 3.0
+  .set($life, -50%) // $life is 1.5
   .sumSay(  
-**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$lifeYears} years
+**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years
   )
 
 ifC(Mild).andIfC(1)
