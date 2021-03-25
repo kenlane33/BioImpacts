@@ -1,6 +1,6 @@
 
 import {Marky} from '../components/marky'
-import  React  from 'react'
+import  React, {useEffect}  from 'react'
 import {prepStruc} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth} from '../helpers/array'
@@ -22,7 +22,7 @@ export default function DemoHimp() {
   }
   const SimpleImp =({tf,parts,stl={},elType='d'}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
-    const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')) )
+    const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')|| (parts[0].startsWith('orIf'))) )
     let txt = (isIf) ? `${parts.join('(')})`: `└${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
     stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
@@ -55,7 +55,7 @@ export default function DemoHimp() {
   const Struc = ({struc, Comps, store}) => {
     if(!struc.id) return null
     const {id} = struc
-    console.log('struc.impCompOs=', struc.impCompOs)
+    if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
     //    ////
     const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
     style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey'}}>
@@ -87,10 +87,10 @@ export default function DemoHimp() {
       style={{marginLeft: 5, color: "#606"}}>
         {impCompOs.map(x=>x.map(ico=>(
           ico.comp && <ico.comp {...ico} />
-    ))
-    )}
-  </span>)
+        )))}
+    </span>)
 
+    //---------------------------------------------
     return [
       <Top>
         <StrucShow struc={struc} />          
@@ -138,11 +138,16 @@ export default function DemoHimp() {
   console.log( 'structures=', structures )
   console.log( 'store=', store )
   const summary = store.sumImps.sort(x=>x.rank).map(x=>x)
+  useEffect(()=>{
+    console.log(new Date().toTimeString().slice(0,8),'=========================================================')
+  },[])
   //-------------------------------------------
   return (
     <div className="App">
       <h3>Health Impact Code (Himp)</h3>
-      <pre>{JSON.stringify(summary, null, 2)}</pre>
+      <pre>{JSON.stringify(summary, null, 2)
+        .replace(/,[\n\s]+"/mg,', "').replace(/{[\n\s]+/mg,'{')
+        }</pre>
       <pre>{JSON.stringify(store.vars, null, 2)}</pre>
       <pre>{JSON.stringify(store.err, null, 2)}</pre>
       <Strucs store={store} strucs={structures} Comps={comps}/>

@@ -73,7 +73,7 @@ const calcIf = (ifParams, struc, verb) => {
 //----///////------------------------------------
 const runImp = (impRaw, struc, comps, store) => {
   const imp = parseImp(impRaw) 
-  let ifResult = false
+  let ifResult = true
   let saysOfCurrIf = []
   let rank = null
   store.vars = store.vars || {}
@@ -93,14 +93,16 @@ const runImp = (impRaw, struc, comps, store) => {
   }
   //----//////////////----------------------------
   const nudgeOrSetVar = (k,newVRaw, verb, params) => {
+    const cmdStr = `${verb}(${params})`
+    if (!newVRaw) {addErr(cmdStr+' bad value'); return}
     newVRaw += '' // ensure a string
     const oldV = store.vars[k] || 0
     const newV = (newVRaw+'').replace('%','')
     const isPercent = (newVRaw.length !== newV.length)
-    const newV_f = safeFloat(newV,null, `${verb}(${params}) should look like 6, +5, -2, 3%, -7%, or +4%`)
+    const newV_f = safeFloat(newV,null, `${cmdStr}: should look like 6, +5, -2, 3%, -7%, or +4%`)
     const hasSign = (newV.startsWith('-') || newV.startsWith('+'))
     if (isNaN(newV_f)) {
-      addErr()
+      addErr(`bad number for ${verb}(${params})`)
       return
     }
     if (isPercent) {
@@ -109,17 +111,17 @@ const runImp = (impRaw, struc, comps, store) => {
     } else {
       store.vars[k] = (hasSign) ? (oldV + newV_f)          : newV_f
     }
-    const cmd = `${verb} set(${k}, ${newVRaw}) --->  ${k} = ${store.vars[k]}`
-    console.log(cmd)// + JSON.stringify({verb, k, '$a':store.vars[k], oldV, newV, newV_f, isPercent, hasSign}))
+    // const cmd = `set(${k}, ${newVRaw}) --->  ${k} = ${store.vars[k]}`
+    // console.log('nudgeOrSetVar.'+cmd)
     return store
   }
   //----///////------------------
   const setVar=(params, verb, pms, eqn=(x=>x))=>{
-    console.log('set',pms)
+    // console.log('set',pms)
     const ps = (params) && splitTrim(pms, ',')
     if (ps && ps.length>1) {
       const [key,val] = ps
-      nudgeOrSetVar(key, eqn(val), verb,pms)
+      nudgeOrSetVar(key, eqn(val), verb, pms)
     } else {
       addErr(`Problem parsing ${verb}(${pms})`)
     }
@@ -131,7 +133,7 @@ const runImp = (impRaw, struc, comps, store) => {
   //----//////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
-    const which = `${verb}(${params})`
+    const cmdStr = `${verb}(${params||''}) on id:${struc.id}`
     let CompForVerb = comps[verb] || comps.Raw
     const plainIf = verb.replace('and','').replace('or','').replace('If','if')
     const isIfCmd = plainIf.startsWith('if')
@@ -142,7 +144,6 @@ const runImp = (impRaw, struc, comps, store) => {
     }
     //-------------------------///--------------------------
     if ( isIfCmd ) {
-      console.log(verb.slice(verb.indexOf('if')))
       const calcedIfIsTrue = calcIf(params, struc, plainIf)
       if ( verb.startsWith("andIf") ) ifResult &&= calcedIfIsTrue
       if ( verb.startsWith("orIf")  ) ifResult ||= calcedIfIsTrue
@@ -150,13 +151,14 @@ const runImp = (impRaw, struc, comps, store) => {
         ifResult = calcedIfIsTrue
         saysOfCurrIf = []
       }
+      // console.log(cmdStr)
       compO = {...compO, comp: comps.if, tf: ifResult}
       return compO
       // return <Comps.Raw {...bind} />
     }
     //----------//////--------------------------
     else if (verb === "sumRank") {
-      rank = safeFloat(params, 0, which)
+      rank = safeFloat(params, 0, cmdStr)
       // rank = parseInt(params)
       // if (isNaN(rank)) {
       //   addErr(`Number expected for ${verb}(${params})`)
@@ -181,46 +183,44 @@ const runImp = (impRaw, struc, comps, store) => {
       // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
-    else if (verb === "setRR") {
+    else if (verb === "setRR") { // EX: .setRR($boo, 1.34)
       const asRiskReduction = (x) =>{
-        const x_f = parseFloat(x)
-        if (isNaN(x_f)) addErr(`Number expected for ${verb}(${params})`)
-        ( 1.0 / parseFloat(x))
+        const x_f = safeFloat(x, null, cmdStr)
+        if (isNaN(x_f)) addErr(`Number expected for: ${cmdStr})`)
+        return (x_f) ? `${( 1.0 / x_f)}%` : null
       }
       setVar( params, verb, params, asRiskReduction )
       return compO
     } 
     //----------//////--------------------------
-    else if (verb === "sumSay") {
+    else if (verb === "sumSay") { // EX: .sumSay(Amputation)
       addSumImp({...compO, rank})
-      // store.sumImps = [...(store.sumImps||[]), {...compO, rank}]
       return compO
-      // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
-    else if (verb === "say") {
-      saysOfCurrIf.push(compO) //; console.log(`tag="${params}"`)
+    else if (verb === "say") { // EX: .say(Loss of limb)
+      saysOfCurrIf.push(compO) 
       return compO
-      // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
-    else if (verb === "strikeThrough") {
+    else if (verb === "strike") { // EX: .strike(#scary_ones)
       if (ifResult) {
-        const taggedImps = store[params.trim()]
+        const taggedImps = store[params]
         // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+        if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return compO}
         taggedImps.map(x => x.comp = comps.greeny )
-        console.log('strikeThrough().store=',store)
+        // console.log('strike().store=',store)
       }
       return compO
     } 
     //----------//////--------------------------
-    else if (verb === "tag") {
-      store[params.trim()] = saysOfCurrIf //; console.log(`tag="${params}"`)
-      console.log('tag().store=',store)
+    else if (verb === "tag") { // EX:  .tag(#scary_ones)
+      store[params] = saysOfCurrIf // console.log(cmdStr + ' | store=',store)
       return compO
     } 
     //----------//////--------------------------
     else if (CompForVerb) {
+      //TODO if (CompForVerb === comps.Raw) addErr(`Unknown himp cmd ${cmdStr}`)
       return compO
     } 
     else {

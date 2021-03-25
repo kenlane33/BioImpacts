@@ -17,8 +17,9 @@ const exampleStrucs =
           name: "Sleep apnea",
           impacts:[`
           .hide().if(*).show()
-ifC(Mild,OR,Moderate).tag(#lungy)
-  .set(life,-3)
+ifC(Mild).orIf(Moderate).tag(#lungy)
+  .set($boo,40)
+  .setRR($boo,+2%)
   .say(Strike out this text via an action since it is tagged as #lungy!)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
@@ -55,15 +56,14 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
               picker: "PickEnum(Never,Sometimes,Nightly)",
               id: 4,
               impacts: [
-                `ifAct(Nightly).strikeThrough(#lungy)`,
+                `ifAct(Nightly).strike(#lungy)`,
                 "if(Never    ).doNothing()",
-                `ifRisk(Moderate).andIfAction(Nightly  )
-                   .strikeSays(Moderate)
+                `ifRisk(Moderate)
+                .andIfAction(Nightly  )
                    .say(Reduces moderate & severe impacts.)`,
                 `ifAction(Nightly  )
                    .delete(Moderate)
                    .fix(#Sum.life,+4%)
-                   .strikeSays(Severe)
                    .say(
 **Nightly** is the best choice<br/>
 <span>**Removes** moderate & **severe** *impacts*</span>
