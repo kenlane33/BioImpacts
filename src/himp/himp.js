@@ -44,6 +44,7 @@ const prepStrucs = (strucs, jours, comps, store) =>(
 )
 //----//////////////////------------------------------------
 const matchAncestorPick = (struc, val, flavor) => {
+  if (val==='*')
   return (flavor) ? 
     struc.ancFlavPicks.includes(`${flavor||''}_${val}`) :
     struc.ancPicks.includes(val)
@@ -71,19 +72,28 @@ const runImp = (impRaw, struc, comps, store) => {
   store.vars = store.vars || {}
   // console.log('store=',store)
   //---------------------------------------------------------------------
-  const addErr    = (str) => store.err     = [...(store.err||[]), str]
+  const addErr    = (str) => {store.err     = [...(store.err||[]), str]; console.log('%c'+str,'background:red;padding:2px')}
   const addSumImp = (si)  => store.sumImps = [...(store.sumImps||[]), si]
   const mergeVar  = (k,v) => store.vars   = {...(store.vars||[]), [k]:v}
+  //----/////////--------------------------------
+  const safeFloat = (x, def=null, which='?') => {
+    const x_f = parseFloat(x)
+    if (isNaN(x_f)) {
+      addErr(`Number expected for ${which}`); 
+      return def
+    }
+    else { return x_f }
+  }
   //----///////////----------------------------
-  const nudgeOrSet = (k,newVRaw, verb, params) => {
+  const nudgeOrSetVar = (k,newVRaw, verb, params) => {
     newVRaw += '' // ensure a string
     const oldV = store.vars[k] || 0
     const newV = (newVRaw+'').replace('%','')
     const isPercent = (newVRaw.length !== newV.length)
-    const newV_f = parseFloat(newV)
+    const newV_f = safeFloat(newV,null, `${verb}(${params}) should look like 6, +5, -2, 3%, -7%, or +4%`)
     const hasSign = (newV.startsWith('-') || newV.startsWith('+'))
     if (isNaN(newV_f)) {
-      addErr(`Params should look like 6, +5, -2, 3%, -7%, +4% got: ${verb}(${params})`)
+      addErr()
       return
     }
     if (isPercent) {
@@ -97,23 +107,24 @@ const runImp = (impRaw, struc, comps, store) => {
     return store
   }
   //----//////------------------
-  const setVar=(params, eqn=(x=>x))=>{
-    console.log('set',params)
-    const ps = (params) && params.split(',')
+  const setVar=(params, verb, pms, eqn=(x=>x))=>{
+    console.log('set',pms)
+    const ps = (params) && splitTrim(pms, ',')
     if (ps && ps.length>1) {
-      const [key,val] = params.split(',').map(x=>x.trim())
-      mergeVar(key, eqn(val))
+      const [key,val] = ps
+      nudgeOrSetVar(key, eqn(val), verb,pms)
     } else {
-      addErr(`Problem parsing ${verb}(${params})`)
+      addErr(`Problem parsing ${verb}(${pms})`)
     }
   }
-  nudgeOrSet('$life',      '5', '1.')
-  nudgeOrSet('$life',    '+7', '2.')
-  nudgeOrSet('$life',    '25%', '3.')
-  nudgeOrSet('$life', '-50%', '4.')
+  nudgeOrSetVar('$life',      '5.0', '1.')
+  nudgeOrSetVar('$life',    '+7', '2.')
+  nudgeOrSetVar('$life',    '25%', '3.')
+  nudgeOrSetVar('$life', '-50%', '4.')
   //----/////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
+    const which = `${verb}(${params})`
     let CompForVerb = comps[verb] || comps.Raw
     //console.log( '[verb, params]', [verb, params] )
     let compO = {
@@ -137,17 +148,18 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "sumRank") {
-      rank = parseInt(params)
-      if (isNaN(rank)) {
-        addErr(`Number expected for ${verb}(${params})`)
-        rank = 0
-      }
+      rank = safeFloat(params, 0, which)
+      // rank = parseInt(params)
+      // if (isNaN(rank)) {
+      //   addErr(`Number expected for ${verb}(${params})`)
+      //   rank = 0
+      // }
       return compO
       // return <bind.comp {...bind} />
     } 
     //----------//////--------------------------
     else if (verb === "set") {
-      setVar(params)
+      setVar(params, verb, params)
       // console.log('set',params)
       // const ps = (params) && params.split(',')
       // if (ps && ps.length>1) {
@@ -162,7 +174,12 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "setRR") {
-      setVar( params, x=>( 1.0 / parseFloat(x)) )
+      const asRiskReduction = (x) =>{
+        const x_f = parseFloat(x)
+        if (isNaN(x_f)) addErr(`Number expected for ${verb}(${params})`)
+        ( 1.0 / parseFloat(x))
+      }
+      setVar( params, verb, params, asRiskReduction )
       return compO
     } 
     //----------//////--------------------------
