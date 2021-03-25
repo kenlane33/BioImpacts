@@ -16,6 +16,7 @@ const exampleStrucs =
           id: 3,
           name: "Sleep apnea",
           impacts:[`
+          .hide().if(*).show()
 ifC(Mild,OR,Moderate).tag(#lungy)
   .set(life,-3)
   .say(Strike out this text via an action since it is tagged as #lungy!)

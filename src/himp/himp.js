@@ -44,8 +44,15 @@ const prepStrucs = (strucs, jours, comps, store) =>(
 )
 //----//////////////////------------------------------------
 const matchAncestorPick = (struc, val, flavor) => {
-  if (val==='*')
-  return (flavor) ? 
+  if (val==='*') {
+    return  !(
+      struc.ancPicks.includes('None') || 
+      struc.ancPicks.includes('Never') ||
+      struc.ancPicks.includes('0')     || struc.ancPicks.includes(0)     ||
+      struc.ancPicks.includes('false') || struc.ancPicks.includes(false)
+    )
+  }
+  else return (flavor) ? 
     struc.ancFlavPicks.includes(`${flavor||''}_${val}`) :
     struc.ancPicks.includes(val)
 }
@@ -84,7 +91,7 @@ const runImp = (impRaw, struc, comps, store) => {
     }
     else { return x_f }
   }
-  //----///////////----------------------------
+  //----//////////////----------------------------
   const nudgeOrSetVar = (k,newVRaw, verb, params) => {
     newVRaw += '' // ensure a string
     const oldV = store.vars[k] || 0
@@ -106,7 +113,7 @@ const runImp = (impRaw, struc, comps, store) => {
     console.log(cmd)// + JSON.stringify({verb, k, '$a':store.vars[k], oldV, newV, newV_f, isPercent, hasSign}))
     return store
   }
-  //----//////------------------
+  //----///////------------------
   const setVar=(params, verb, pms, eqn=(x=>x))=>{
     console.log('set',pms)
     const ps = (params) && splitTrim(pms, ',')
@@ -121,7 +128,7 @@ const runImp = (impRaw, struc, comps, store) => {
   nudgeOrSetVar('$life',    '+7', '2.')
   nudgeOrSetVar('$life',    '25%', '3.')
   nudgeOrSetVar('$life', '-50%', '4.')
-  //----/////////-------------------
+  //----//////////-------------------
   const impCompOs = noBlanks(imp).map((impParts,i) => {
     const [verb, params] = trimAll(impParts)
     const which = `${verb}(${params})`
