@@ -133,6 +133,7 @@ const runImp = (impRaw, struc, comps, store) => {
       addErr(`Problem parsing ${verb}(${pms})`)
     }
   }
+  
   // nudgeOrSetVar('$life',      '5.0', '1.')
   // nudgeOrSetVar('$life',    '+7', '2.')
   // nudgeOrSetVar('$life',    '25%', '3.')
@@ -145,6 +146,16 @@ const runImp = (impRaw, struc, comps, store) => {
     const plainIf = verb.replace('and','').replace('or','').replace('If','if')
     const isIfCmd = plainIf.startsWith('if')
     //console.log( '[verb, params]', [verb, params] )
+
+    const alterImps = (fn) =>{
+      const taggedImps = store[params]
+      // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+      if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return false}
+      taggedImps.map( fn )
+      // console.log('strike().store=',store)
+      return true
+    }
+
     let compO = {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
@@ -212,11 +223,12 @@ const runImp = (impRaw, struc, comps, store) => {
     //----------//////--------------------------
     else if (verb === "strike") { // EX: .strike(#scary_ones)
       if (ifResult) {
-        const taggedImps = store[params]
-        // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
-        if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return compO}
-        taggedImps.map(x => x.comp = comps.greeny )
-        // console.log('strike().store=',store)
+        alterImps( (x) => x.comp = comps.greeny )
+        // const taggedImps = store[params]
+        // // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+        // if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return compO}
+        // taggedImps.map(x => x.comp = comps.greeny )
+        // // console.log('strike().store=',store)
       }
       return compO
     } 
