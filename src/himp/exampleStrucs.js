@@ -25,7 +25,8 @@ ifC(Mild).orIf(Moderate)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
   )
-  .tag(#ick).say(Icky)
+  .tag(#hideMe).say(Hide Me)
+  .tag(#showMe).say(Show Me)
   .sumRank(50).sumSay(Sleep apnea trouble)
   .pointer( lung-R, Difficulty breathing, red )
   .sumRank(40)
@@ -64,7 +65,8 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
                 .andIfAction(Nightly  )
                    .say(Reduces moderate & severe impacts.)`,
                 `ifAction(Nightly  )
-                .hide(#ick)
+                .hide(#showMe)
+                .hide()
                    .delete(Moderate)
                    .fix(#Sum.life,+4%)
                    .say(

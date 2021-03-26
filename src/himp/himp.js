@@ -5,7 +5,10 @@ var ctr = 0
 const parseImp = (imp) => {
   let imps
   // imps = imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g)
-  imps = imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\)[\s\n]*\./gm)
+  imps = imp
+    .replace(/\)[\s\n]*if/gm,').\nif') // fix ifs without .s
+    .replace(/\/\/[ \t$\w.]*/g,'')     // remove trailing // comments
+    .split(/\)[\s\n]*\./gm)            // split on ). (even with whitespace)
   // console.log(JSON.stringify(imps))
   return (
   imps.map((x) => {
