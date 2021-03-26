@@ -19,26 +19,26 @@ const exampleStrucs =
 .hide()
 ifC(Mild).orIf(Moderate)
   .show()
-  .tag(#lungy)
   .set($boo,100)
   .setRR($boo,1.25)
+  .tag(#lungy)
   .say(Strike out this text via an action since it is tagged as #lungy!)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
   )
   .tag(#hideMe).say(Hide Me)
   .tag(#showMe).say(Show Me)
-  .tag(#showMe)
+  .ifC(Mild)
   .hide(#hideMe)
   .show(#showMe)
+  .strike(#lungy)
   .sumRank(50).sumSay(Sleep apnea trouble)
   .pointer( lung-R, Difficulty breathing, red )
   .sumRank(40)
-  .set($lifeYears,-5%)
-  .set($life, 8)    // $life is 5
-  .set($life, +7)   // $life is 12
-  .set($life, 25%)  // $life is 3.0
-  .set($life, 50%) // $life is 1.5
+  .set($life,  80 )    // $life is 80
+  .set($life, +10 )   // $life is 90
+  .set($life,  80%)   // $life is 72
+  .set($life,  +5%)   // $life is 75.6
   .sumSay(  
 **Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years
   )

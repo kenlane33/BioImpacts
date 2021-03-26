@@ -10,7 +10,6 @@ import {ks, ksGo} from '../helpers/keySafe'
 //======================/////////============================
 export default function DemoHimp() {
 
-
   const ff = [
     {txt:'\n## Fooness\n**foo** boo', tag:'#21.R.Mild'},
     {txt:null, tag:'#SpecialTag'},
@@ -46,8 +45,20 @@ export default function DemoHimp() {
     // useEffect(()=>{p.parts.push('FIX')},[p.parts])
     return <SimpleImp {...{...p, stl:{fontWeight:'bold'}}} />
   }
-  const SayImp = ({tf, parts, style}) => {
+  const interpolateStrings = (txt, vars) => {
+    const arr = txt.split(/\{\$/).map((x,i)=>(i<0)?x:x.split('}'))
+    if (arr.length==1) return txt
+    else {
+      // console.log(JSON.stringify(arr))
+      // console.log(vars)
+      const arr2 = arr.map( (x)=> (x.length>1)? (vars['$'+x[0]]+x[1]) : x[0])
+      // console.log(JSON.stringify(arr2.join('')))
+      return arr2.join('')
+    }
+  }
+  const SayImp = ({tf, parts, style, store}) => {
     let [__,txt] = parts
+    txt = interpolateStrings(txt, store.vars)
     txt = txt.replace(/^[ \t]+/,'') // trimLeft except for \n
     if (txt.match(/^\n/)) return (
       <div style={{marginLeft:10, padding:'2px 0 15px 10px', border:'solid 1px grey', ...style}}>
@@ -97,7 +108,7 @@ export default function DemoHimp() {
     const RendImpCompOs = ({struc:{impCompOs}}) => (<span key={ks('imps_'+id)} 
       style={{marginLeft: 5, color: "#606"}}>
         {impCompOs.map(x=>x.map(ico=>(
-          ico.comp && <ico.comp {...ico} />
+          ico.comp && <ico.comp {...ico} store={store}/>
         )))}
     </span>)
 
