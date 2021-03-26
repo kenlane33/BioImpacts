@@ -20,7 +20,7 @@ export default function DemoHimp() {
   const GreenImp =(p) => {
     return <SimpleImp {...{...p, stl:{fontWeight:'bold',color:'white',background:'#dfd',textDecoration:'line-through'}}} />
   }
-  const SimpleImp =({tf,parts,stl={},elType='d'}) => {
+  const SimpleImp =({tf,parts,stl={},elType='d',style}) => {
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
     const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')|| (parts[0].startsWith('orIf'))) )
     let txt = (isIf) ? `${parts.join('(')})`: `└${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
@@ -30,13 +30,13 @@ export default function DemoHimp() {
     if (!isIf) {
       stl = {borderLeft:'1px solid grey',...stl, marginLeft:10, paddingLeft:10 }
     } else {stl = {...stl, borderTop:'1px solid grey', borderLeft:'1px solid grey'}}
-    return <pre style={stl}>{txt}</pre> 
+    return <pre style={{...stl, ...style}}>{txt}</pre> 
   }
   const FixImp = (p) => {
     // useEffect(()=>{p.parts.push('FIX')},[p.parts])
     return <SimpleImp {...{...p, stl:{fontWeight:'bold'}}} />
   }
-  const SayImp = ({tf,parts,style}) => {
+  const SayImp = ({tf, parts, style}) => {
     let [__,txt] = parts
     txt = txt.replace(/^[ \t]+/,'') // trimLeft except for \n
     if (txt.match(/^\n/)) return (
@@ -48,7 +48,7 @@ export default function DemoHimp() {
         <div style={{marginTop:8, borderBottom:'3px solid #ddd'}}></div>
       </div>
     )
-    return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' />)
+    return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' style={style}/>)
   }
 
   //----//////-----------
@@ -59,28 +59,28 @@ export default function DemoHimp() {
     if (struc.style) console.log('struc.style',struc.style)
     //    ////
     const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
-    style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
+      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
         {children}
     </div>)
     //    ///////
     const Picker = ({children}) => (<div key={ks("picker_"+id)} 
-    style={{marginLeft: 30, color: "#066"}}>
+      style={{marginLeft: 30, color: "#066"}}>
         {children}
     </div>)
     //    //////////
     const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
-    style={{background:'#ddd', padding:5}}>
+      style={{background:'#ddd', padding:5}}>
         <span style={{background:'white',padding:2,lineHeight:2,fontSize:10}}>{`${flavor} :`}</span>
         {` ${name} [${id}]`}
     </div>
     //    ///////
     const PadGrey = ({children}) => (<span key={ks("pick_"+id)} 
-    style={{marginLeft: 30, color:'#ccc'}}>
+      style={{marginLeft: 30, color:'#ccc'}}>
         {children}
     </span>)
     //    /////////
     const PickShow = ({struc:{pick, id}}) => (<span key={ks("pick_"+id)} 
-    style={{color: "#050", fontWeight:600}}>
+      style={{color: "#050", fontWeight:600}}>
       {safeIth( pick, 1)}
     </span>)
     //    //////////////

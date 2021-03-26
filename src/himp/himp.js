@@ -150,17 +150,21 @@ const runImp = (impRaw, struc, comps, store) => {
 
     const alterImps = (taggedImps, fn) =>{
       // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
-      if (!taggedImps) {addErr(`tag not found in: ${cmdStr}`); return false}
-      taggedImps.map( fn )
-      // console.log('strike().store=',store)
-      return true
+      if (!taggedImps) {
+        addErr(`tag not found in: ${cmdStr}`)
+        return false
+      } else{
+        taggedImps.forEach( fn )
+        console.log('alterImps().taggedImps=',taggedImps)
+        return true
+      }
     }
     const alterStruc = (strc, fn) => {
       fn(struc)//.style = {...(struc.style||{}), ...style}
     }
     const styleThing = (struc, params, style) => {
       console.log(cmdStr, params)
-      params ? 
+      params ? // if params passed, then its a tag, otherwise its a struc
         alterImps(store[params], (x) => x.style = {...x.style, ...style} ) :
         alterStruc( struc, (x) => x.style = {...x.style, ...style} )
     }
