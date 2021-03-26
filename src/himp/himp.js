@@ -82,7 +82,8 @@ const calcIf = (ifParams, struc, verb) => {
 const runImp = (impRaw, struc, comps, store) => {
   const imp = parseImp(impRaw) 
   let ifResult = true
-  let saysOfCurrIf = []
+  // let saysOfCurrIf = []
+  let currTag = null
   let rank = null
   store.vars = store.vars || {}
   // console.log('store=',store)
@@ -134,7 +135,6 @@ const runImp = (impRaw, struc, comps, store) => {
       addErr(`Problem parsing ${verb}(${pms})`)
     }
   }
-  
   // nudgeOrSetVar('$life',      '5.0', '1.')
   // nudgeOrSetVar('$life',    '+7', '2.')
   // nudgeOrSetVar('$life',    '25%', '3.')
@@ -158,7 +158,13 @@ const runImp = (impRaw, struc, comps, store) => {
     const alterStruc = (strc, fn) => {
       fn(struc)//.style = {...(struc.style||{}), ...style}
     }
-
+    const styleThing = (struc, params, style) => {
+      console.log(cmdStr, params)
+      params ? 
+        alterImps(store[params], (x) => x.style = {...x.style, ...style} ) :
+        alterStruc( struc, (x) => x.style = {...x.style, ...style} )
+    }
+  
     let compO = {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
@@ -170,12 +176,10 @@ const runImp = (impRaw, struc, comps, store) => {
       if ( verb.startsWith("orIf")  ) ifResult ||= calcedIfIsTrue
       if ( verb.startsWith("if")  )  {
         ifResult = calcedIfIsTrue
-        saysOfCurrIf = []
+        currTag = null
       }
-      // console.log(cmdStr)
       compO = {...compO, comp: comps.if, tf: ifResult}
       return compO
-      // return <Comps.Raw {...bind} />
     }
     //----------//////--------------------------
     else if (verb === "sumRank") {
@@ -220,7 +224,13 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "say") { // EX: .say(Loss of limb)
-      saysOfCurrIf.push(compO) 
+      if (currTag) {
+        console.log(currTag, compO.parts)
+        store[currTag] = [...(store[currTag]||[]), compO]
+        compO.tag = currTag
+        compO.parts.push(currTag)
+      }
+      // saysOfCurrIf.push(compO) 
       return compO
     } 
     //----------//////--------------------------
@@ -229,18 +239,26 @@ const runImp = (impRaw, struc, comps, store) => {
       return compO
     } 
     //----------//////--------------------------
+    else if (verb === "show") { // EX: .hide() or .hide(#scary_ones)
+      if (ifResult) { 
+        styleThing(struc, params, params ? {background:'#ffd'} : {background:'#dff'}) 
+      }
+      return compO
+    }
+    //----------//////--------------------------
     else if (verb === "hide") { // EX: .hide() or .hide(#scary_ones)
-      if (ifResult) {
-        console.log(cmdStr, params)
-        params ? 
-          alterImps(store[params], (x) => x.comp = comps.greeny ) :
-          alterStruc( struc, (x) => x.style = {background:'#ddf'})
+      if (ifResult) { styleThing(struc, params, params ? {background:'#fdf'} : {background:'#ddf'})
+        // console.log(cmdStr, params)
+        // params ? 
+        //   alterImps(store[params], (x) => x.style = {background:'#fdf'} ) :
+        //   alterStruc( struc, (x) => x.style = {background:'#ddf'})
       }
       return compO
     } 
     //----------//////--------------------------
     else if (verb === "tag") { // EX:  .tag(#scary_ones)
-      store[params] = saysOfCurrIf // console.log(cmdStr + ' | store=',store)
+      currTag = params
+      // store[params] = saysOfCurrIf // console.log(cmdStr + ' | store=',store)
       return compO
     } 
     //----------//////--------------------------

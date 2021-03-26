@@ -17,13 +17,15 @@ const exampleStrucs =
           name: "Sleep apnea",
           impacts:[`
           .hide().if(*).show()
-ifC(Mild).orIf(Moderate).tag(#lungy)
+ifC(Mild).orIf(Moderate)
+  .tag(#lungy)
   .set($boo,100)
   .setRR($boo,1.25)
   .say(Strike out this text via an action since it is tagged as #lungy!)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
   )
+  .tag(#ick).say(Icky)
   .sumRank(50).sumSay(Sleep apnea trouble)
   .pointer( lung-R, Difficulty breathing, red )
   .sumRank(40)
@@ -62,6 +64,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
                 .andIfAction(Nightly  )
                    .say(Reduces moderate & severe impacts.)`,
                 `ifAction(Nightly  )
+                .hide(#ick)
                    .delete(Moderate)
                    .fix(#Sum.life,+4%)
                    .say(
