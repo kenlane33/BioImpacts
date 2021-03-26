@@ -240,18 +240,23 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "show") { // EX: .hide() or .hide(#scary_ones)
-      if (ifResult) { 
-        styleThing(struc, params, params ? {background:'#ffd'} : {background:'#dff'}) 
+      // .show() will hide the struc itself
+      // .show(#fun_one) will hide .tag()ged .say() items
+      if (ifResult) {
+        styleThing(struc, params, params ? 
+          {background:'#ffd'} : // for tagged ones
+          {background:'#dff'})  // for strucs
       }
       return compO
     }
     //----------//////--------------------------
     else if (verb === "hide") { // EX: .hide() or .hide(#scary_ones)
-      if (ifResult) { styleThing(struc, params, params ? {background:'#fdf'} : {background:'#ddf'})
-        // console.log(cmdStr, params)
-        // params ? 
-        //   alterImps(store[params], (x) => x.style = {background:'#fdf'} ) :
-        //   alterStruc( struc, (x) => x.style = {background:'#ddf'})
+      // .hide() will hide the struc itself
+      // .hide(#fun_one) will hide .tag()ged .say() items
+      if (ifResult) { 
+        styleThing(struc, params, params ? 
+          {background:'#444', color:'white'} : // for tagged ones
+          {background:'#ddf'})  // for strucs
       }
       return compO
     } 
