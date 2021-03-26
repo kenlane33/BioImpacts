@@ -1,20 +1,19 @@
 import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
-import {merge} from '../helpers/objects'
-var ctr = 0
+//var ctr = 0
 //----/////////------------------------------------
 const parseImp = (imp) => {
   let imps
   // imps = imp.replace(/\)[\s\n]*if/gm,').\nif').split(/\s*\./g)
   imps = imp
-    .replace(/\)[\s\n]*if/gm,').\nif') // fix ifs without .s
     .replace(/\/\/[ \t$\w.]*/g,'')     // remove trailing // comments
+    .replace(/\)[\s\n]*if/gm,').\nif') // fix ifs without .s
     .split(/\)[\s\n]*\./gm)            // split on ). (even with whitespace)
   // console.log(JSON.stringify(imps))
   return (
   imps.map((x) => {
     const ret = noBlanks(x.trim().split(/[()]/))
     if (ret && ret.length>0) ret[0] = ret[0].replace(/^\./,'')
-    ctr +=1
+    //ctr +=1
     // if((ctr>=8)&&(ctr<=20)) 
     // console.log(ctr+' parseImp=',ret.map(x=>x.replace(/[\n\s]+/gm,'')))
     return ret
@@ -235,7 +234,7 @@ const runImp = (impRaw, struc, comps, store) => {
         console.log(currTag, compO.parts)
         store[currTag] = [...(store[currTag]||[]), compO]
         compO.tag = currTag
-        compO.parts.push(currTag)
+        // compO.parts.push(currTag)
       }
       // saysOfCurrIf.push(compO) 
       return compO
@@ -247,28 +246,26 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "show") { // EX: .hide() or .hide(#scary_ones)
-      // .show() will hide the struc itself
-      // .show(#fun_one) will hide .tag()ged .say() items
       if (ifResult) {
         styleThing(struc, params, params ? 
-          {background:'#ffd'} : // for tagged ones
-          {background:'#dff'})  // for strucs
+          {background:'#ffd'} : // for tagged ones .show(#fun_one) will hide .tag()ged .say() items
+          {background:'#dff'})  // for strucs .show() will hide the struc itself
       }
       return compO
     }
     //----------//////--------------------------
     else if (verb === "hide") { // EX: .hide() or .hide(#scary_ones)
-      // .hide() will hide the struc itself
-      // .hide(#fun_one) will hide .tag()ged .say() items
       if (ifResult) { 
         styleThing(struc, params, params ? 
-          {background:'#444', color:'white'} : // for tagged ones
-          {background:'#ddf'})  // for strucs
+          {background:'#444', color:'white'} : // for tagged ones .hide(#fun_one) will hide .tag()ged .say() items
+          {background:'#225'})  // for strucs .hide() will hide the struc itself
       }
       return compO
-    } 
+    }
     //----------//////--------------------------
     else if (verb === "tag") { // EX:  .tag(#scary_ones)
+      //if (store[params]) addErr(`tag already exists .${cmdStr} Effected says: ${JSON.stringify(store[params])}`)
+      //store[params]=[]
       currTag = params
       // store[params] = saysOfCurrIf // console.log(cmdStr + ' | store=',store)
       return compO

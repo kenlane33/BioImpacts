@@ -21,9 +21,19 @@ export default function DemoHimp() {
     return <SimpleImp {...{...p, stl:{fontWeight:'bold',color:'white',background:'#dfd',textDecoration:'line-through'}}} />
   }
   const SimpleImp =({tf,parts,stl={},elType='d',style}) => {
+    if (!parts || (typeof parts === 'string') ) {
+      parts = [parts]
+    }
     // const txt = `${tfStr(tf)}: ${parts.join('(')})`
     const isIf = parts && ((parts[0].startsWith('if')) || (parts[0].startsWith('andIf')|| (parts[0].startsWith('orIf'))) )
-    let txt = (isIf) ? `${parts.join('(')})`: `└${tfStr(tf)}:${JSON.stringify(parts)}`.replace(/:"/,':').replace(/"$/,'')
+    const cmd0 = parts.join('(')
+    const cmd = cmd0.includes('(') ? cmd0+')' : cmd0 + '()'
+    // console.log('0',JSON.stringify(parts))
+    // console.log('1',parts[0])
+    // console.log('2',parts.join('('))
+    let txt = (isIf) ? 
+      `${parts.join('(')})` : 
+      `└${tfStr(tf)}:${cmd}`.replace(/:"/,':').replace(/"$/,'')
     stl = {fontFamily:'monospace',margin:0, ...stl}
     stl = {...stl, ...((tf)?({color:'green'}):({color:'red'}))}
     if (elType==='s') stl = {display:'inline',...stl}
@@ -48,7 +58,7 @@ export default function DemoHimp() {
         <div style={{marginTop:8, borderBottom:'3px solid #ddd'}}></div>
       </div>
     )
-    return(<SimpleImp tf={tf} parts={`say('${txt}')`} elType='s' style={style}/>)
+    return(<SimpleImp tf={tf} parts={parts} elType='s' style={style}/>)
   }
 
   //----//////-----------
@@ -56,7 +66,7 @@ export default function DemoHimp() {
     if(!struc.id) return null
     const {id} = struc
     if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
-    if (struc.style) console.log('struc.style',struc.style)
+    // if (struc.style) console.log('struc.style',struc.style)
     //    ////
     const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
       style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
