@@ -21,6 +21,11 @@ const exampleStrucs =
       picker: ">>smoking",
     },
     {
+      flavor: "CONDITION", id: 14,
+      name: "DDD",
+      picker: "Pick(Yes,No)>>smoking",
+    },
+    {
       flavor: "CONDITION",
       id: 2,
       name: "Diagnosis: CPOD",

@@ -94,7 +94,7 @@ export default function DemoHimp() {
       const pTs = store.pickerTags[tag] || [struc]
       if (pTs) {
         pTs.forEach(x=>{
-          console.log('pickerTags=',x)
+          // console.log('pickerTags=',x)
           newJours[x.id] = newJours[x.id] || [x.name,pick,null]
           newJours[x.id][1] = pick
         })
@@ -104,7 +104,7 @@ export default function DemoHimp() {
       newJours[struc.id] = [struc.name,pick,null]
     }
     setJours( newJours )
-    console.log('doPick=',JSON.stringify(newJours).replace(/],/g,'],\n'), pick, [verb,list,tag])
+    // console.log('doPick=',JSON.stringify(newJours).replace(/],/g,'],\n'), pick, [verb,list,tag])
   }
   //    ///////
   const Picker = ({struc,doPick,store,jours}) => {
@@ -118,13 +118,13 @@ export default function DemoHimp() {
       verb=arr[0]; btns=arr[1]; tag=arr[2]
     }
     const pick2 = safeIth(pick, 1)+''
-    pick = ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
+    // pick = ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
         style={{marginLeft: 30, color: "#066"}}>
-          {picker}:{pick}
+          {picker}:{pick[1]}
           {btns && btns.map(b=> {
-            const stl= (b===pick) ? {border:'3px black solid'} :{}
+            const stl= (b===pick[1]) ? {border:'3px black solid'} :{}
             return (
               <button
                 onClick={()=>doPick(b,struc,store,jours)} 
