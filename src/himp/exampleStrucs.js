@@ -5,17 +5,17 @@ const exampleStrucs =
   name: "Symptom: Difficulty sleeping",
   picker: "Pick(Yes,No)",
   children: [
-    {  
+    {
       flavor: "CONDITION", id: 11,
       name: "AAA",
       picker: "Pick(Yes,No)>>smoking",
     },
-    {  
+    {
       flavor: "CONDITION", id: 12,
       name: "BBB",
       picker: ">>smoking",
     },
-    {  
+    {
       flavor: "CONDITION", id: 13,
       name: "CCC",
       picker: ">>smoking",
@@ -63,7 +63,7 @@ Show Me)
   .sumSay(Increased risk for heart attack or stroke)
   .say(  
 React interpolation test
-<Foxer txt="abc {$life}"/>
+<Foxer txt="abc {$life} << should say 'Fox: abc 75.6'"/>
   )
 ifC(Mild).andIfC(1)
 .say(  

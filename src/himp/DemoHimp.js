@@ -123,36 +123,33 @@ export default function DemoHimp() {
       </div>
     )
   }
-    const Top = ({struc,children}) => (<div key={ks('top_'+(struc.id || "?"))} 
-      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', 
-      ...(struc.style||{})}}>
-        {children}
-    </div>)
-
-    //    //////////
-    const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
-      style={{background:'#ddd', padding:5}}>
-        <span style={{background:'white',padding:2,lineHeight:2,fontSize:10}}>{`${flavor} :`}</span>
-        {` ${name} [${id}]`}
-    </div>
-    //    ///////
-    const PadGrey = ({struc:{id},children}) => (<span key={ks("pick_"+id)} 
-      style={{marginLeft: 30, color:'#ccc'}}>
-        {children}
-    </span>)
-    //    /////////
-    const PickShow = ({struc:{pick, id}}) => (<span key={ks("pick_"+id)} 
-      style={{color: "#050", fontWeight:600}}>
-      {safeIth( pick, 1)}
-    </span>)
+  //    ////
+  const Top = ({struc,children}) => (<div key={ks('top_'+(struc.id || "?"))} 
+    style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', 
+    ...(struc.style||{})}}>
+      {children}
+  </div>)
+  //    //////////
+  const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
+    style={{background:'#ddd', padding:5}}>
+      <span style={{background:'white',padding:2,lineHeight:2,fontSize:10}}>{`${flavor} :`}</span>
+      {` ${name} [${id}]`}
+  </div>
+  //    ///////
+  const PadGrey = ({struc:{id},children}) => (<span key={ks("pick_"+id)} 
+    style={{marginLeft: 30, color:'#ccc'}}>
+      {children}
+  </span>)
+  //    /////////
+  const PickShow = ({struc:{pick, id}}) => (<span key={ks("pick_"+id)} 
+    style={{color: "#050", fontWeight:600}}>
+    {safeIth( pick, 1)}
+  </span>)
   //----//////-----------
   const Struc = ({struc, comps, store, jours}) => {
-    if(!struc.id) return null
-    const {id} = struc
+    if (!struc) return <div>null</div>
+    if(!struc.id) return <div style={{background:'red',color:'white',margin:10,padding:5}}>Missing id of struc:{JSON.stringify({...struc,impacts:null})}</div>
     if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
-    // if (struc.style) console.log('struc.style',struc.style)
-    //    ////
-
     //---------------------------------------------
     return [
       <Top {...{struc}}>
@@ -162,14 +159,14 @@ export default function DemoHimp() {
         <PickShow {...{struc}} />
         <RendImpCompOs impCompOs={struc.impCompOs} id={struc.id}/>
       </Top>,
-      Strucs({strucs: struc.children, comps, store, jours}) // recurse
+      Strucs({strucs: struc.children, comps, store, jours}) // recurse children
     ]
   }
   //----///////-----------
   const Strucs = ({strucs, comps, store, jours}) => {
     return (
-      strucs && strucs.map((s,i) => (
-        <Struc store={store} struc={s} comps={comps} key={s.name || `?${i}`} />
+      strucs && strucs.map((struc,i) => (
+        <Struc {...{struc, store, comps, jours}} key={struc.name || `?${i}`} />
     ))
   )}
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
@@ -220,7 +217,7 @@ export default function DemoHimp() {
       <pre>{JSON.stringify(store.vars, null, 2)}</pre>
       </div>
       <pre>{JSON.stringify(store.err, null, 2)}</pre>
-      <Strucs {...{store, strucs, comps, jours}}/>
+      <Strucs {...{strucs, store, comps, jours}}/>
       <h1>☯</h1>
     </div>
   )
