@@ -5,6 +5,21 @@ const exampleStrucs =
   name: "Symptom: Difficulty sleeping",
   picker: "PickSwitch()",
   children: [
+    {  
+      flavor: "CONDITION", id: 11,
+      name: "AAA",
+      picker: "PickEnum(Yes,No)>>smoking",
+    },
+    {  
+      flavor: "CONDITION", id: 12,
+      name: "BBB",
+      picker: ">>smoking",
+    },
+    {  
+      flavor: "CONDITION", id: 13,
+      name: "CCC",
+      picker: ">>smoking",
+    },
     {
       flavor: "CONDITION",
       id: 2,
@@ -26,8 +41,10 @@ ifC(Mild).orIf(Moderate)
   .say(
 **Sleep apnea:** *periodically* **stop breathing** when asleep
   )
-  .tag(#hideMe).say(Hide Me)
-  .tag(#showMe).say(Show Me)
+  .tag(#hideMe).say(
+Hide **Me**)
+  .tag(#showMe).say(
+Show Me)
   .ifC(Mild)
   .hide(#hideMe)
   .show(#showMe)
@@ -40,9 +57,14 @@ ifC(Mild).orIf(Moderate)
   .set($life,  80%)   // $life is 72
   .set($life,  +5%)   // $life is 75.6
   .sumSay(  
-**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years
+**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years.
   )
-
+  .tag(#strokeness)
+  .sumSay(Increased risk for heart attack or stroke)
+  .say(  
+React interpolation test
+<Foxer txt="abc {$life}"/>
+  )
 ifC(Mild).andIfC(1)
 .say(  
 Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Severe
@@ -51,7 +73,9 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
           `if(Boom)
              .say(Woo)`,
           `if(Mild)
-             .say(Feel tired).say(Dry mouth).say(Mild snoring)`,
+          .strik(#strokeness)
+             .say(Feel tired).say(Dry mouth).say(Mild snoring)
+             `,
           `if(Mild,OR,Moderate)
              .say(Diabetes).say(Strokes).say(Heart attacks)`,
           `if(Severe).say(Sudden death while sleeping)`,

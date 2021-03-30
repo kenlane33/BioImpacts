@@ -72,6 +72,40 @@ export default function DemoHimp() {
     return(<SimpleImp tf={tf} parts={parts} elType='s' style={style}/>)
   }
 
+    //    //////////////
+  const RendImpCompOs = ({impCompOs,id}) => (<span key={ks('imps_'+id)} 
+    style={{marginLeft: 5, color: "#606"}}>
+      {impCompOs.map(x=>x.map(ico=>(
+        ico.comp && <ico.comp {...ico} store={store}/>
+      )))}
+  </span>)
+  //----//////-----------
+  const doPick = (picker,pick,pickTags) => {
+    
+  }
+  //    ///////
+  const Picker = ({picker,pick,doPick,id}) => {
+    if (!picker) return null
+    let [verb,pms] = (picker && picker.split(/[()]+/)) || ['?','']
+    const isEnum = (verb==='PickEnum')
+    pms = (isEnum) ? pms : 'Yes,No'
+    const btns = pms.split(',')
+    const pick2 = safeIth(pick, 1)+''
+    pick = (isEnum) ? pick2 : ((pick2==='1'||safeIth(pick,1)===true||pick2==='on'||pick2==='On')?'On':'Off')
+    return (
+      <div key={ks("picker_"+id)} 
+        style={{marginLeft: 30, color: "#066"}}>
+          {picker}:{pick}
+          {btns.map(b=> {
+            const stl= (b===pick) ? {border:'3px black solid'} :{}
+          return (
+            <button style={{background:'#ccc', margin:4, padding:2, ...stl}}>
+              {b}
+            </button>)
+          })}
+      </div>
+    )
+  }
   //----//////-----------
   const Struc = ({struc, Comps, store}) => {
     if(!struc.id) return null
@@ -83,11 +117,7 @@ export default function DemoHimp() {
       style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
         {children}
     </div>)
-    //    ///////
-    const Picker = ({children}) => (<div key={ks("picker_"+id)} 
-      style={{marginLeft: 30, color: "#066"}}>
-        {children}
-    </div>)
+
     //    //////////
     const StrucShow = ({struc:{flavor,name,id}}) => <div key={ks('struc_'+id)}
       style={{background:'#ddd', padding:5}}>
@@ -104,22 +134,15 @@ export default function DemoHimp() {
       style={{color: "#050", fontWeight:600}}>
       {safeIth( pick, 1)}
     </span>)
-    //    //////////////
-    const RendImpCompOs = ({struc:{impCompOs}}) => (<span key={ks('imps_'+id)} 
-      style={{marginLeft: 5, color: "#606"}}>
-        {impCompOs.map(x=>x.map(ico=>(
-          ico.comp && <ico.comp {...ico} store={store}/>
-        )))}
-    </span>)
 
     //---------------------------------------------
     return [
       <Top>
         <StrucShow struc={struc} />          
-        <Picker>{struc.picker}</Picker>
+        <Picker {...{...struc}} />
         <PadGrey>Pick = </PadGrey>
         <PickShow struc={struc} />
-        <RendImpCompOs struc={struc} />
+        <RendImpCompOs impCompOs={struc.impCompOs} id={struc.id}/>
       </Top>,
       Strucs({strucs: struc.children, Comps, store}) // recurse
     ]
@@ -127,8 +150,8 @@ export default function DemoHimp() {
   //----///////-----------
   const Strucs = ({strucs, Comps, store}) => {
     return (
-      strucs && strucs.map((s) => (
-        <Struc store={store} struc={s} Comps={Comps} key={s.name || "?"} />
+      strucs && strucs.map((s,i) => (
+        <Struc store={store} struc={s} Comps={Comps} key={s.name || `?${i}`} />
     ))
   )}
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
@@ -159,7 +182,7 @@ export default function DemoHimp() {
   const structures = prepStruc(exampleStrucs, jours, comps, store)
   console.log( 'structures=', structures )
   console.log( 'store=', store )
-  const summary = store.sumImps.sort(x=>x.rank).map(x=>x)
+  const summary = store.sumImps.sort(x=>x.rank).map(x=>[x])
   useEffect(()=>{
     console.log(new Date().toTimeString().slice(0,8),'=========================================================')
   },[])
@@ -167,10 +190,17 @@ export default function DemoHimp() {
   return (
     <div className="App">
       <h3>Health Impact Code (Himp)</h3>
-      <pre>{JSON.stringify(summary, null, 2)
+      <div style={{border:'solid 1px blue', padding:8}}>
+        Summary .say()scollected from .sumSay() statements<br/> <br/> 
+        <RendImpCompOs impCompOs={summary} id='summary'/>
+      </div>
+      {/* <pre>{JSON.stringify(summary, null, 2)
         .replace(/,[\n\s]+"/mg,', "').replace(/{[\n\s]+/mg,'{')
-        }</pre>
+      }</pre> */}
+      <div style={{border:'solid 1px green', padding:8}}>
+      vars:
       <pre>{JSON.stringify(store.vars, null, 2)}</pre>
+      </div>
       <pre>{JSON.stringify(store.err, null, 2)}</pre>
       <Strucs store={store} strucs={structures} Comps={comps}/>
       <h1>☯</h1>

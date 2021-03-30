@@ -11,6 +11,10 @@ const safeSplit = (str,char) => (char instanceof RegExp) ?
   ( (str.match(char))    ? str.split(char) : ([str]) ) :
   ( (str.includes(char)) ? str.split(char) : ([str]) )
 
+export const safeSplitNoBlank = (str,char) => (
+  noBlanks( safeSplit(str,char) )
+)
+
 const splitTrim  = (str,ch=',') => trimAll(safeSplit(str,ch))
 
 const makeDoFnOnEachFn = (fn) => (arr, ...rest) => (

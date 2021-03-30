@@ -1,4 +1,4 @@
-import {safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
+import {safeSplitNoBlank, safeIth, trimAll,noBlanks,splitTrim, makeDoFnOnEachFn} from '../helpers/array'
 //var ctr = 0
 //----/////////------------------------------------
 const parseImp = (imp) => {
@@ -25,25 +25,40 @@ const parentArr = (struc) => {
   while(struc.parent){ arr.push(struc = struc.parent()) }
   return arr
 }
-//----/////////////----------------------
+//----////////////--------------------------
+const parsePicker = (pkr) => { // EX: PickEnum(Yes,No)>>heart
+  if (!pkr) return [null,null,null]
+  const [main,tag] = pkr.split('>>')
+  if (main==='') return [null,null,tag]
+  const [verb,list] = main.split(/[()]+/)
+  return [verb, safeSplitNoBlank(list,','), tag]
+}
+//----///////////--------------------------
+const prepPicker = (struc, store) => {
+  let pts = store.pickerTags ||= {}
+  if (!struc.picker) return
+  const [verb,list,tag] = parsePicker(struc.picker)
+  console.log('[verb,list,tag]=',[verb,list,tag])
+  if (tag) {
+    if (verb) pts[tag] = [struc, ...(pts[tag] || []) ]
+    else      pts[tag] = [...(pts[tag] || []), struc ]
+  }
+}
+//----//////////----------------------------
 const prepStruc = (struc, jours, comps, store) => {
   // console.log('prepStruc( ).store=',store)
   const kids = struc.children
-  if (kids){
-    kids.forEach((k) => {
-      k.parent = () => struc // a function that returns the parent (not a ref since that would make a graph loop!)
-      // k.parentImpacts = struc.impacts
-    })
-  }
+  kids && kids.forEach((k) => { k.parent = () => struc }) // a function that returns the parent (not a ref since that would make a graph loop!)
   const pickOfJour = jours[struc.id]
   if (pickOfJour) {
     struc.pick = pickOfJour
     pickOfJour.push(() => struc) // struc.pick[3] is a fn that returns this struc
   }
   const ancestors = parentArr(struc)
-  struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick[1]}`)
-  struc.ancPicks     = ancestors.map(x=>`${x.pick[1]}`)
+  struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick&&x.pick[1]}`)
+  struc.ancPicks     = ancestors.map(x=>`${x.pick&&x.pick[1]}`)
   struc.impCompOs = runImps(struc.impacts, struc, comps, store)
+  prepPicker(struc, store)
   // console.log('ancFlavPicks=',JSON.stringify(struc.ancFlavPicks))
   // now recurse
   return [struc, ...prepStrucs(struc.children, jours, comps, store)]
