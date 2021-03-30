@@ -106,18 +106,24 @@ export default function DemoHimp() {
     setJours( newJours )
     // console.log('doPick=',JSON.stringify(newJours).replace(/],/g,'],\n'), pick, [verb,list,tag])
   }
-  //    ///////
-  const Picker = ({struc,doPick,store,jours}) => {
-    let {picker,pick,id} = struc
-    if (!picker) return null
+  //----///////////////////-------------------------------
+  const findAndParsePicker = (picker,pickerTags) => {
     let [verb,btns,tag] = parsePicker(picker)
-    if (!verb && tag && store.pickerTags) {
-      const pTs = store.pickerTags[tag]
+    if (!verb && tag && pickerTags) {
+      const pTs = pickerTags[tag]
       picker = pTs && pTs.length>0 && pTs[0].picker
       const arr = parsePicker(picker)
       verb=arr[0]; btns=arr[1]; tag=arr[2]
     }
-    const pick2 = safeIth(pick, 1)+''
+    return [verb,btns,tag]
+  }
+  //----///////--------------------------------------------
+  const Picker = ({struc,doPick,store,jours}) => {
+    let {picker,pick=[],id} = struc
+    if (!picker) return null
+
+    let [verb,btns,tag] = findAndParsePicker(picker, store.pickerTags)
+    // const pick2 = safeIth(pick, 1)+''
     // pick = ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
