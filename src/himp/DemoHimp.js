@@ -1,10 +1,9 @@
 
 import {Marky} from '../components/marky'
 import  React, {useEffect}  from 'react'
-import {prepStruc} from '../himp/himp'
+import {prepStruc,parsePicker} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth} from '../helpers/array'
-import {runImps} from './himp'
 import {ks, ksGo} from '../helpers/keySafe'
 
 //======================/////////============================
@@ -80,18 +79,31 @@ export default function DemoHimp() {
       )))}
   </span>)
   //----//////-----------
-  const doPick = (picker,pick,pickTags) => {
-    
+  const doPick = (pick,struc,store,jours) => {
+    const [verb,list,tag] = parsePicker(struc.picker)
+    if (tag && verb) {
+      const pTs = store.pickerTags[tag]
+      if (pTs) {
+        let newJours = {...jours}
+        pTs.forEach(x=>{
+          console.log('pickerTags=',x)
+          newJours[x.id] = newJours[x.id] || [x.name,pick,null]
+          newJours[x.id][1] = pick
+        })
+        console.log('doPick=',JSON.stringify(newJours), pick, [verb,list,tag])
+      }
+    }
   }
   //    ///////
-  const Picker = ({picker,pick,doPick,id}) => {
+  const Picker = ({struc,doPick,store,jour}) => {
+    let {picker,pick,id} = struc
     if (!picker) return null
     let [verb,pms] = (picker && picker.split(/[()]+/)) || ['?','']
     const isEnum = (verb==='PickEnum')
     pms = (isEnum) ? pms : 'Yes,No'
     const btns = pms.split(',')
     const pick2 = safeIth(pick, 1)+''
-    pick = (isEnum) ? pick2 : ((pick2==='1'||safeIth(pick,1)===true||pick2==='on'||pick2==='On')?'On':'Off')
+    pick = (isEnum) ? pick2 : ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
         style={{marginLeft: 30, color: "#066"}}>
@@ -99,7 +111,10 @@ export default function DemoHimp() {
           {btns.map(b=> {
             const stl= (b===pick) ? {border:'3px black solid'} :{}
           return (
-            <button style={{background:'#ccc', margin:4, padding:2, ...stl}}>
+            <button 
+              onClick={()=>doPick(b,struc,store,jours)} 
+              style={{background:'#ccc', margin:4, padding:2, ...stl}}
+            >
               {b}
             </button>)
           })}
@@ -107,7 +122,7 @@ export default function DemoHimp() {
     )
   }
   //----//////-----------
-  const Struc = ({struc, Comps, store}) => {
+  const Struc = ({struc, Comps, store, jours}) => {
     if(!struc.id) return null
     const {id} = struc
     if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
@@ -139,16 +154,16 @@ export default function DemoHimp() {
     return [
       <Top>
         <StrucShow struc={struc} />          
-        <Picker {...{...struc}} />
+        <Picker {...{struc, doPick, store, jours}} />
         <PadGrey>Pick = </PadGrey>
         <PickShow struc={struc} />
         <RendImpCompOs impCompOs={struc.impCompOs} id={struc.id}/>
       </Top>,
-      Strucs({strucs: struc.children, Comps, store}) // recurse
+      Strucs({strucs: struc.children, Comps, store, jours}) // recurse
     ]
   }
   //----///////-----------
-  const Strucs = ({strucs, Comps, store}) => {
+  const Strucs = ({strucs, Comps, store, jours}) => {
     return (
       strucs && strucs.map((s,i) => (
         <Struc store={store} struc={s} Comps={Comps} key={s.name || `?${i}`} />
@@ -202,7 +217,7 @@ export default function DemoHimp() {
       <pre>{JSON.stringify(store.vars, null, 2)}</pre>
       </div>
       <pre>{JSON.stringify(store.err, null, 2)}</pre>
-      <Strucs store={store} strucs={structures} Comps={comps}/>
+      <Strucs store={store} strucs={structures} Comps={comps} jours={jours}/>
       <h1>☯</h1>
     </div>
   )

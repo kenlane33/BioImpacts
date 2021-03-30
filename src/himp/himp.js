@@ -26,7 +26,7 @@ const parentArr = (struc) => {
   return arr
 }
 //----////////////--------------------------
-const parsePicker = (pkr) => { // EX: PickEnum(Yes,No)>>heart
+export const parsePicker = (pkr) => { // EX: PickEnum(Yes,No)>>heart
   if (!pkr) return [null,null,null]
   const [main,tag] = pkr.split('>>')
   if (main==='') return [null,null,tag]
@@ -34,7 +34,7 @@ const parsePicker = (pkr) => { // EX: PickEnum(Yes,No)>>heart
   return [verb, safeSplitNoBlank(list,','), tag]
 }
 //----///////////--------------------------
-const prepPicker = (struc, store) => {
+export const prepPicker = (struc, store) => {
   let pts = store.pickerTags ||= {}
   if (!struc.picker) return
   const [verb,list,tag] = parsePicker(struc.picker)
