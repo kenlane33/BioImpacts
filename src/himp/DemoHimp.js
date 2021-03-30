@@ -81,8 +81,8 @@ export default function DemoHimp() {
   //----//////-----------
   const doPick = (pick,struc,store,jours) => {
     const [verb,list,tag] = parsePicker(struc.picker)
-    if (tag && verb) {
-      const pTs = store.pickerTags[tag]
+    if (verb) {
+      const pTs = store.pickerTags[tag] || [struc]
       if (pTs) {
         let newJours = {...jours}
         pTs.forEach(x=>{
@@ -95,41 +95,37 @@ export default function DemoHimp() {
     }
   }
   //    ///////
-  const Picker = ({struc,doPick,store,jour}) => {
+  const Picker = ({struc,doPick,store,jours}) => {
     let {picker,pick,id} = struc
     if (!picker) return null
-    let [verb,pms] = (picker && picker.split(/[()]+/)) || ['?','']
+    let [verb,btns,tag] = parsePicker(picker)
+    //store.pickerTags[tag]
+    // let [verb,pms] = (picker && picker.split(/[()]+/)) || ['?','']
     const isEnum = (verb==='PickEnum')
-    pms = (isEnum) ? pms : 'Yes,No'
-    const btns = pms.split(',')
+    // pms = (isEnum) ? pms : '?No,?Yes'
+    // const btns = pms.split(',')
     const pick2 = safeIth(pick, 1)+''
     pick = (isEnum) ? pick2 : ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
         style={{marginLeft: 30, color: "#066"}}>
           {picker}:{pick}
-          {btns.map(b=> {
+          {btns && btns.map(b=> {
             const stl= (b===pick) ? {border:'3px black solid'} :{}
-          return (
-            <button 
-              onClick={()=>doPick(b,struc,store,jours)} 
-              style={{background:'#ccc', margin:4, padding:2, ...stl}}
-            >
-              {b}
-            </button>)
+            return (
+              <button 
+                onClick={()=>doPick(b,struc,store,jours)} 
+                style={{background:'#ccc', margin:4, padding:2, ...stl}}
+              >
+                {b}
+              </button>)
           })}
       </div>
     )
   }
-  //----//////-----------
-  const Struc = ({struc, Comps, store, jours}) => {
-    if(!struc.id) return null
-    const {id} = struc
-    if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
-    // if (struc.style) console.log('struc.style',struc.style)
-    //    ////
-    const Top = ({children}) => (<div key={ks('top_'+(id || "?"))} 
-      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', ...(struc.style||{})}}>
+    const Top = ({struc,children}) => (<div key={ks('top_'+(struc.id || "?"))} 
+      style={{marginTop:20, paddingTop:4,borderTop:'1px solid grey', 
+      ...(struc.style||{})}}>
         {children}
     </div>)
 
@@ -140,7 +136,7 @@ export default function DemoHimp() {
         {` ${name} [${id}]`}
     </div>
     //    ///////
-    const PadGrey = ({children}) => (<span key={ks("pick_"+id)} 
+    const PadGrey = ({struc:{id},children}) => (<span key={ks("pick_"+id)} 
       style={{marginLeft: 30, color:'#ccc'}}>
         {children}
     </span>)
@@ -149,24 +145,31 @@ export default function DemoHimp() {
       style={{color: "#050", fontWeight:600}}>
       {safeIth( pick, 1)}
     </span>)
+  //----//////-----------
+  const Struc = ({struc, comps, store, jours}) => {
+    if(!struc.id) return null
+    const {id} = struc
+    if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
+    // if (struc.style) console.log('struc.style',struc.style)
+    //    ////
 
     //---------------------------------------------
     return [
-      <Top>
+      <Top {...{struc}}>
         <StrucShow struc={struc} />          
         <Picker {...{struc, doPick, store, jours}} />
-        <PadGrey>Pick = </PadGrey>
-        <PickShow struc={struc} />
+        <PadGrey {...{struc}}>Pick = </PadGrey>
+        <PickShow {...{struc}} />
         <RendImpCompOs impCompOs={struc.impCompOs} id={struc.id}/>
       </Top>,
-      Strucs({strucs: struc.children, Comps, store, jours}) // recurse
+      Strucs({strucs: struc.children, comps, store, jours}) // recurse
     ]
   }
   //----///////-----------
-  const Strucs = ({strucs, Comps, store, jours}) => {
+  const Strucs = ({strucs, comps, store, jours}) => {
     return (
       strucs && strucs.map((s,i) => (
-        <Struc store={store} struc={s} Comps={Comps} key={s.name || `?${i}`} />
+        <Struc store={store} struc={s} comps={comps} key={s.name || `?${i}`} />
     ))
   )}
   const Foxer = ({txt}) => <div>Fox: {txt}</div>
@@ -194,8 +197,8 @@ export default function DemoHimp() {
     greeny:GreenImp,
   }
   let store = {}
-  const structures = prepStruc(exampleStrucs, jours, comps, store)
-  console.log( 'structures=', structures )
+  const strucs = prepStruc(exampleStrucs, jours, comps, store)
+  console.log( 'structures=', strucs )
   console.log( 'store=', store )
   const summary = store.sumImps.sort(x=>x.rank).map(x=>[x])
   useEffect(()=>{
@@ -217,7 +220,7 @@ export default function DemoHimp() {
       <pre>{JSON.stringify(store.vars, null, 2)}</pre>
       </div>
       <pre>{JSON.stringify(store.err, null, 2)}</pre>
-      <Strucs store={store} strucs={structures} Comps={comps} jours={jours}/>
+      <Strucs {...{store, strucs, comps, jours}}/>
       <h1>☯</h1>
     </div>
   )

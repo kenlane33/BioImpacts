@@ -3,12 +3,12 @@ const exampleStrucs =
   flavor: "CONDITION",
   id: 1,
   name: "Symptom: Difficulty sleeping",
-  picker: "PickSwitch()",
+  picker: "Pick(Yes,No)",
   children: [
     {  
       flavor: "CONDITION", id: 11,
       name: "AAA",
-      picker: "PickEnum(Yes,No)>>smoking",
+      picker: "Pick(Yes,No)>>smoking",
     },
     {  
       flavor: "CONDITION", id: 12,
@@ -24,7 +24,7 @@ const exampleStrucs =
       flavor: "CONDITION",
       id: 2,
       name: "Diagnosis: CPOD",
-      picker: "PickEnum(None,Mild,Moderate,Severe)",
+      picker: "Pick(None,Mild,Moderate,Severe)",
       children: [
         {
           flavor: "RISK",
@@ -84,7 +84,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
             {
               flavor: "ACTION",
               name: "Use CPAP breathing assistant when sleeping",
-              picker: "PickEnum(Never,Sometimes,Nightly)",
+              picker: "Pick(Never,Sometimes,Nightly)",
               id: 4,
               impacts: [
                 `ifAct(Nightly).strike(#lungy)`,

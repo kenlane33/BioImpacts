@@ -273,7 +273,6 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     else {
       return compO
-      // return <Comps.Raw {...bind} />
     }
   })
   return impCompOs//[impRet, store]
