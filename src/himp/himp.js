@@ -52,7 +52,7 @@ const prepStruc = (struc, jours, comps, store) => {
   const pickOfJour = jours[struc.id]
   if (pickOfJour) {
     struc.pick = pickOfJour
-    pickOfJour.push(() => struc) // struc.pick[3] is a fn that returns this struc
+    pickOfJour[3] = (() => struc) // struc.pick[3] is a fn that returns this struc
   }
   const ancestors = parentArr(struc)
   struc.ancFlavPicks = ancestors.map(x=>`${x.flavor[0]}_${x.pick&&x.pick[1]}`)

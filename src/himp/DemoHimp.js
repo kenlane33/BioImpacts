@@ -1,6 +1,6 @@
 
 import {Marky} from '../components/marky'
-import  React, {useEffect}  from 'react'
+import  React, {useEffect, useState}  from 'react'
 import {prepStruc,parsePicker} from '../himp/himp'
 import {exampleStrucs} from '../himp/exampleStrucs'
 import {safeIth} from '../helpers/array'
@@ -8,6 +8,14 @@ import {ks, ksGo} from '../helpers/keySafe'
 
 //======================/////////============================
 export default function DemoHimp() {
+
+  //-------------------------------------------
+  let [jours,setJours] = useState({
+    "1": ["Symptom: Difficulty sleeping", 1, 1],
+    "2": ["Diagnosis: CPOD", "Mild", 2],
+    "3": ["Sleep apena", "Moderate", null],
+    "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
+  })
 
   const ff = [
     {txt:'\n## Fooness\n**foo** boo', tag:'#21.R.Mild'},
@@ -81,31 +89,36 @@ export default function DemoHimp() {
   //----//////-----------
   const doPick = (pick,struc,store,jours) => {
     const [verb,list,tag] = parsePicker(struc.picker)
+    let newJours = {...jours}
     if (verb) {
       const pTs = store.pickerTags[tag] || [struc]
       if (pTs) {
-        let newJours = {...jours}
         pTs.forEach(x=>{
           console.log('pickerTags=',x)
           newJours[x.id] = newJours[x.id] || [x.name,pick,null]
           newJours[x.id][1] = pick
         })
-        console.log('doPick=',JSON.stringify(newJours), pick, [verb,list,tag])
+        strucs = prepStruc(exampleStrucs, jours, comps, store)
       }
+    } else {
+      newJours[struc.id] = [struc.name,pick,null]
     }
+    setJours( newJours )
+    console.log('doPick=',JSON.stringify(newJours).replace(/],/g,'],\n'), pick, [verb,list,tag])
   }
   //    ///////
   const Picker = ({struc,doPick,store,jours}) => {
     let {picker,pick,id} = struc
     if (!picker) return null
     let [verb,btns,tag] = parsePicker(picker)
-    //store.pickerTags[tag]
-    // let [verb,pms] = (picker && picker.split(/[()]+/)) || ['?','']
-    const isEnum = (verb==='PickEnum')
-    // pms = (isEnum) ? pms : '?No,?Yes'
-    // const btns = pms.split(',')
+    if (!verb && tag && store.pickerTags) {
+      const pTs = store.pickerTags[tag]
+      picker = pTs && pTs.length>0 && pTs[0].picker
+      const arr = parsePicker(picker)
+      verb=arr[0]; btns=arr[1]; tag=arr[2]
+    }
     const pick2 = safeIth(pick, 1)+''
-    pick = (isEnum) ? pick2 : ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
+    pick = ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
         style={{marginLeft: 30, color: "#066"}}>
@@ -113,7 +126,7 @@ export default function DemoHimp() {
           {btns && btns.map(b=> {
             const stl= (b===pick) ? {border:'3px black solid'} :{}
             return (
-              <button 
+              <button
                 onClick={()=>doPick(b,struc,store,jours)} 
                 style={{background:'#ccc', margin:4, padding:2, ...stl}}
               >
@@ -174,13 +187,6 @@ export default function DemoHimp() {
   const StrikeImp = ({tf,parts}) =>(
     <pre>{`${tfStr(tf)}: ${parts.join('(')})`}</pre>
   )
-  //-------------------------------------------
-  const jours = {
-    "1": ["Symptom: Difficulty sleeping", 1, 1],
-    "2": ["Diagnosis: CPOD", "Mild", 2],
-    "3": ["Sleep apena", "Moderate", null],
-    "4": ["Use CPAP breathing assistant when sleeping", "Nightly", 2],
-  }
 
   //-------------------------------------------
   const comps = {
@@ -194,13 +200,13 @@ export default function DemoHimp() {
     greeny:GreenImp,
   }
   let store = {}
-  const strucs = prepStruc(exampleStrucs, jours, comps, store)
+  let strucs = prepStruc(exampleStrucs, jours, comps, store)
   console.log( 'structures=', strucs )
   console.log( 'store=', store )
   const summary = store.sumImps.sort(x=>x.rank).map(x=>[x])
   useEffect(()=>{
     console.log(new Date().toTimeString().slice(0,8),'=========================================================')
-  },[])
+  },[strucs])
   //-------------------------------------------
   return (
     <div className="App">
