@@ -165,8 +165,9 @@ const runImp = (impRaw, struc, comps, store) => {
     const isIfCmd = plainIf.startsWith('if')
     //console.log( '[verb, params]', [verb, params] )
 
-    const alterImps = (taggedImps, fn) =>{
+    const alterImps = (tag, fn) =>{
       // console.log(params.trim(), 'store[params.trim()]=', taggedImps )
+      const taggedImps = store.taggedImps[tag]
       if (!taggedImps) {
         addErr(`tag not found in: ${cmdStr}`)
         return false
@@ -179,13 +180,20 @@ const runImp = (impRaw, struc, comps, store) => {
     const alterStruc = (strc, fn) => {
       fn(struc)//.style = {...(struc.style||{}), ...style}
     }
-    const styleThing = (struc, params, style) => {
+    const styleThing = (struc, tag, style) => {
       // console.log(cmdStr, params)
       params ? // if params passed, then its a tag, otherwise its a struc
-        alterImps(store[params], (x) => x.style = {...x.style, ...style} ) :
+        alterImps(tag, (x) => x.style = {...x.style, ...style} ) :
         alterStruc( struc, (x) => x.style = {...x.style, ...style} )
     }
-  
+    const storeTaggedImp = (currTag,compO,store) => {
+      if (currTag) {
+        store.taggedImps ||= {}
+        store.taggedImps[currTag] = [...(store.taggedImps[currTag]||[]), compO] // console.log(currTag, compO.parts)
+        compO.tag = currTag
+      }
+    }
+
     let compO = {
       comp: CompForVerb,  key:`imp_${i}_${struc.id}`, 
       tf:   ifResult,   parts:impParts
@@ -223,21 +231,23 @@ const runImp = (impRaw, struc, comps, store) => {
     } 
     //----------//////--------------------------
     else if (verb === "sumSay") { // EX: .sumSay(Amputation)
+      storeTaggedImp(currTag,compO,store)
       addSumImp({...compO, rank})
       return compO
     } 
     //----------//////--------------------------
     else if (verb === "say") { // EX: .say(Loss of limb)
-      if (currTag) {
-        store[currTag] = [...(store[currTag]||[]), compO] // console.log(currTag, compO.parts)
-        compO.tag = currTag
-      }
+      storeTaggedImp(currTag,compO,store)
+      // if (currTag) {
+      //   store[currTag] = [...(store[currTag]||[]), compO] // console.log(currTag, compO.parts)
+      //   compO.tag = currTag
+      // }
       // saysOfCurrIf.push(compO) 
       return compO
     } 
     //----------//////--------------------------
     else if (verb === "strike") { // EX: .strike(#scary_ones)
-      if (ifResult) alterImps( store[params], (x) => x.comp = comps.greeny )
+      if (ifResult) alterImps( params, (x) => x.comp = comps.greeny )
       return compO
     } 
     //----------//////--------------------------

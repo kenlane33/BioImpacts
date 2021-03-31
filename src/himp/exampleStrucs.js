@@ -61,11 +61,14 @@ Show Me)
   .set($life, +10 )   // $life is 90
   .set($life,  80%)   // $life is 72
   .set($life,  +5%)   // $life is 75.6
+  .tag(#apnea)
   .sumSay(  
-**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years.
-  )
+    **Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years.
+    )
+  .hide(#apnea)
   .tag(#strokeness)
   .sumSay(Increased risk for heart attack or stroke)
+  .tag(#)
   .say(  
 React interpolation test
 <Foxer txt="abc {$life} << should say 'Fox: abc 75.6'"/>
@@ -78,7 +81,7 @@ Severe **stuff** *in* **markdown** that would hide if parent \`ifC\` is not Seve
           `if(Boom)
              .say(Woo)`,
           `if(Mild)
-          .strik(#strokeness)
+          .strike(#strokeness)
              .say(Feel tired).say(Dry mouth).say(Mild snoring)
              `,
           `if(Mild,OR,Moderate)
