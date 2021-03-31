@@ -168,7 +168,7 @@ export default function DemoHimp() {
   const Struc = ({struc, comps, store, jours}) => {
     if (!struc) return <div>null</div>
     if(!struc.id) return <div style={{background:'red',color:'white',margin:10,padding:5}}>Missing id of struc:{JSON.stringify({...struc,impacts:null})}</div>
-    if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs)
+    if (struc.impCompOs.length>0) console.log('struc.impCompOs=', struc.impCompOs, struc.name)
     //---------------------------------------------
     return [
       <Top {...{struc}}>

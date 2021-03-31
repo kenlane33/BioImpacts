@@ -38,7 +38,7 @@ export const prepPicker = (struc, store) => {
   let pts = store.pickerTags ||= {}
   if (!struc.picker) return
   const [verb,list,tag] = parsePicker(struc.picker)
-  console.log('[verb,list,tag]=',[verb,list,tag])
+  // console.log('[verb,list,tag]=',[verb,list,tag])
   if (tag) {
     if (verb) pts[tag] = [struc, ...(pts[tag] || []) ]
     else      pts[tag] = [...(pts[tag] || []), struc ]
