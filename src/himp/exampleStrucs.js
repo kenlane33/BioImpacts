@@ -63,7 +63,7 @@ Show Me)
   .set($life,  +5%)   // $life is 75.6
   .tag(#apnea)
   .sumSay(  
-    **Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years.
+**Summary** text: Untreated Sleep Apnea may reduce your lifespan by 5% to {$life} years.
     )
   .hide(#apnea)
   .tag(#strokeness)

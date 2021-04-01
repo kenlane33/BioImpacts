@@ -117,28 +117,33 @@ export default function DemoHimp() {
     }
     return [verb,btns,tag]
   }
+  const parsePick = (pick) => {
+    const pck = safeIth(pick,1)
+    if (!pck) return null
+    if (typeof pck === 'boolean') return pck
+    return (pck.match(/^on|^yes|^1$|true/i)) ? 'Yes' : 'No'
+  }
   //----///////--------------------------------------------
   const Picker = ({struc,doPick,store,jours}) => {
     let {picker,pick=[],id} = struc
     if (!picker) return null
 
     let [verb,btns,tag] = findAndParsePicker(picker, store.pickerTags)
-    // const pick2 = safeIth(pick, 1)+''
-    // pick = ((pick2==='1'||safeIth(pick,1)===true||pick2==='yes'||pick2==='Yes')?'Yes':'No')
     return (
       <div key={ks("picker_"+id)} 
-        style={{marginLeft: 30, color: "#066"}}>
-          {picker}:{pick[1]}
-          {btns && btns.map(b=> {
-            const stl= (b===pick[1]) ? {border:'3px black solid'} :{}
-            return (
-              <button
-                onClick={()=>doPick(b,struc,store,jours)} 
-                style={{background:'#ccc', margin:4, padding:2, ...stl}}
-              >
-                {b}
-              </button>)
-          })}
+        style={{marginLeft: 30, color: "#066"}}
+      >
+        <pre style={{display:'inline'}}>{picker}</pre> {/*' : ' +pick[1]*/}
+        {btns && btns.map( (btn)=>{
+          const stl= (btn===pick[1]) ? {border:'3px black solid'} :{}
+          return (
+            <button
+              onClick={ ()=>doPick(btn,struc,store,jours) } 
+              style={{background:'#ccc', margin:4, padding:2, ...stl}}
+            >
+              {btn}
+            </button>)
+        })}
       </div>
     )
   }

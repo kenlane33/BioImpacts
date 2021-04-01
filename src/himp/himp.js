@@ -181,10 +181,13 @@ const runImp = (impRaw, struc, comps, store) => {
       fn(struc)//.style = {...(struc.style||{}), ...style}
     }
     const styleThing = (struc, tag, style) => {
-      // console.log(cmdStr, params)
-      params ? // if params passed, then its a tag, otherwise its a struc
-        alterImps(tag, (x) => x.style = {...x.style, ...style} ) :
-        alterStruc( struc, (x) => x.style = {...x.style, ...style} )
+      const hasParams = (!!params)
+      const styleTargs = (hasParams) ? 
+        (store.taggedImps[tag] || [])  :  [struc]
+      styleTargs.forEach((x) => x.style = {...x.style, ...style})
+      // params ? // if params passed .hide(#taggy), then its a tag, otherwise its a struc .hide()
+      //   alterImps(    tag, (x) => x.style = {...x.style, ...style} ) :
+      //   alterStruc( struc, (x) => x.style = {...x.style, ...style} )
     }
     const storeTaggedImp = (currTag,compO,store) => {
       if (currTag) {
